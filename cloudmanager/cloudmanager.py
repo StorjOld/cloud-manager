@@ -31,12 +31,15 @@ class CloudManager(object):
 
     def warm_up(self, file_hash):
         record = self.file_database.fetch(file_hash)
-        if record['is_cached']:
+        if record.is_cached:
             return True
 
-        self.make_room_for(record['size'])
-        ret = self.plowshare.download(record['payload'], self.storage.storage_path)
-        self.file_database.restored_to_cache(record['hash'])
+        self.make_room_for(record.size)
+
+        # I do not like the fact that plowshare gets to determine the final URL.
+        ret = self.plowshare.download(record.payload, self.storage.storage_path)
+
+        self.file_database.restored_to_cache(record.hash)
 
     def usage_ratio(self):
         return 1.0 * self.storage.used() / self.storage.size()
@@ -47,7 +50,7 @@ class CloudManager(object):
     def on_cache(self, file_hash):
         record = self.file_database.fetch(file_hash)
 
-        return record != None and record['is_cached'] == True
+        return record != None and record.is_cached == True
 
     def make_room_for(self, needed):
         if not self.storage.fits(needed):
@@ -58,8 +61,8 @@ class CloudManager(object):
             print "Removing something"
             to_be_removed = self.file_database.closest_cache_in_size(needed)
 
-            print "picked", to_be_removed
-            self.storage.remove(to_be_removed['name'])
-            self.file_database.removed_from_cache(to_be_removed["hash"])
-            used_space -= to_be_removed['size']
+            print "picked", to_be_removed.name
+            self.storage.remove(to_be_removed.name)
+            self.file_database.removed_from_cache(to_be_removed.hash)
+            used_space -= to_be_removed.size
 

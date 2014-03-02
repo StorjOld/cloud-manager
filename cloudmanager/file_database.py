@@ -1,6 +1,14 @@
 import sqlite3
 import json
 
+class FileRecord(object):
+    def __init__(self, record):
+        self.name      = record['name']
+        self.hash      = record['hash']
+        self.size      = record['size']
+        self.payload   = json.loads(record['payload'])
+        self.is_cached = record['is_cached']
+
 class FileDatabase(object):
     """Stores information on all uploaded files.
 
@@ -61,10 +69,4 @@ class FileDatabase(object):
       if row == None:
           return None
 
-      return {
-          'name': row['name'],
-          'hash': row['hash'],
-          'size': row['size'],
-          'payload': json.loads(row['payload']),
-          'is_cached': row['is_cached']
-      }
+      return FileRecord(row)
