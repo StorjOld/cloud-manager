@@ -1,4 +1,5 @@
 import sqlite3
+import json
 
 class FileDatabase(object):
     """Stores information on all uploaded files.
@@ -7,12 +8,13 @@ class FileDatabase(object):
     def __init__(self, database_path):
         self.database_path = database_path
         self.db = sqlite3.connect(database_path)
+        self.db.row_factory = sqlite3.Row
 
     def fetch(self, file_hash):
         cursor = self.db.cursor()
         result = cursor.execute(
-            "SELECT * FROM files WHERE file_hash = ?",
-            file_hash)
+            "SELECT * FROM files WHERE hash = ?",
+            [file_hash])
 
         row = result.fetchone()
 
@@ -21,21 +23,36 @@ class FileDatabase(object):
     def store(self, file_name, cloud_info, is_cached):
         cursor = self.db.cursor()
         cursor.execute(
-            "INSERT INTO files (name, hash, payload, is_cached) VALUES(?, ?, ?, ?);",
-            file_name,
-            cloud_info["filehash"],
-            json.dumps(cloud_info),
-            is_cached)
+            "INSERT INTO files (name, hash, size, payload, is_cached) VALUES(?, ?, ?, ?, ?);",
+            [file_name,
+              cloud_info["filehash"],
+              int(cloud_info["filesize"]),
+              json.dumps(cloud_info),
+              is_cached])
+
+        self.db.commit()
 
     def removed_from_cache(self, file_hash):
         cursor = self.db.cursor()
         cursor.execute(
-            "UPDATE files SET is_cached = ? WHERE file_hash = ?;",
-            False, file_hash)
+            "UPDATE files SET is_cached = ? WHERE hash = ?;",
+            [False, file_hash])
 
     def restored_to_cache(self, file_hash):
         cursor = self.db.cursor()
         cursor.execute(
-            "UPDATE files SET is_cached = ? WHERE file_hash = ?;",
-            True, file_hash)
+            "UPDATE files SET is_cached = ? WHERE hash = ?;",
+            [True, file_hash])
 
+    def closest_cache_in_size(self, size):
+        cursor = self.db.cursor()
+        result = cursor.execute(
+            """
+              SELECT * FROM
+                  (SELECT * FROM files WHERE size >= ? ORDER BY size LIMIT 1) x
+              UNION
+              SELECT * FROM
+                  (SELECT * FROM files ORDER BY size DESC LIMIT 1) y;""", [size])
+
+        row = result.fetchone()
+        return row
