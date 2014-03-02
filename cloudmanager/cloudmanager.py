@@ -1,18 +1,22 @@
 import os
+import plowshare
+
 import file_database
 import storage
+import transfer_meter
 import helpers
-import plowshare
 
 class CloudManager(object):
     Plowshare = plowshare.Plowshare
     Database  = file_database.FileDatabase
     Storage   = storage.Storage
+    Meter     = transfer_meter.TransferMeter
 
     def __init__(self, database_path, storage_path, storage_size):
         self.file_database = self.Database(database_path)
         self.plowshare     = self.Plowshare()
         self.storage       = self.Storage(storage_path, storage_size)
+        self.meter         = self.Meter(database_path)
 
     def close(self):
         self.file_database.close()
@@ -43,6 +47,7 @@ class CloudManager(object):
         info = self.plowshare.upload(file_path, 3)
         saved_path = self.storage.add(file_path, key)
         self.file_database.store(saved_path, info, True)
+        self.meter.measure_upload(needed)
         return key
 
     def download(self, file_hash):
@@ -62,14 +67,23 @@ class CloudManager(object):
 
         self.make_room_for(record.size)
 
-        # I do not like the fact that plowshare gets to determine the final URL.
+        # Plowshare shouldn't determine the filename.
         ret = self.plowshare.download(record.payload, self.storage.storage_path)
 
         self.file_database.restored_to_cache(record.hash)
+        self.meter.measure_upload(record.size)
 
     def usage_ratio(self):
         """Returns the percentage of used space."""
         return 1.0 * self.storage.used() / self.storage.size()
+
+    def downloaded(self):
+        """Returns the number of bytes downloaded"""
+        return self.meter.total_download()
+
+    def uploaded(self):
+        """Returns the number of bytes uploaded"""
+        return self.meter.total_upload()
 
     def exists(self, file_hash):
         """Checks if a given file is in this cloud system."""

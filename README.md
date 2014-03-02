@@ -100,6 +100,12 @@ Calculate the current usage ratio of the local cache.
     cm.usage_ratio()
 
 
+Retrieve the total number of bytes downloaded and uploaded.
+
+    cm.downloaded()
+    cm.uploaded()
+
+
 Release all resources associated with the cloud manager instance.
 
     cm.close()
