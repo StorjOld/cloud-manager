@@ -58,10 +58,8 @@ class CloudManager(object):
 
         used_space = self.storage.used()
         while not self.storage.fits(used_space + needed):
-            print "Removing something"
             to_be_removed = self.file_database.closest_cache_in_size(needed)
 
-            print "picked", to_be_removed.name
             self.storage.remove(to_be_removed.name)
             self.file_database.removed_from_cache(to_be_removed.hash)
             used_space -= to_be_removed.size

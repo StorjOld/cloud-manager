@@ -57,10 +57,15 @@ class FileDatabase(object):
         result = cursor.execute(
             """
               SELECT * FROM
-                  (SELECT * FROM files WHERE size >= ? ORDER BY size LIMIT 1) x
+                  (SELECT * FROM files
+                   WHERE size >= ? AND is_cached
+                   ORDER BY size LIMIT 1) x
               UNION
               SELECT * FROM
-                  (SELECT * FROM files ORDER BY size DESC LIMIT 1) y;""", [size])
+                  (SELECT * FROM files
+                   WHERE is_cached
+                   ORDER BY size DESC LIMIT 1) y;
+            """, [size])
 
         row = result.fetchone()
         return self.convert(row)
