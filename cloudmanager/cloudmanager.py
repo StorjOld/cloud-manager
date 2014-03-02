@@ -43,6 +43,7 @@ class CloudManager(object):
         info = self.plowshare.upload(file_path, 3)
         saved_path = self.storage.add(file_path, key)
         self.file_database.store(saved_path, info, True)
+        return key
 
     def download(self, file_hash):
         """Warms up the cache for the given hash"""
