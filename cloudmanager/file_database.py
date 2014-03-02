@@ -18,6 +18,9 @@ class FileDatabase(object):
         self.db = sqlite3.connect(database_path)
         self.db.row_factory = sqlite3.Row
 
+    def close(self):
+        self.db.close()
+
     def fetch(self, file_hash):
         cursor = self.db.cursor()
         result = cursor.execute(

@@ -14,6 +14,15 @@ class CloudManager(object):
         self.plowshare     = self.Plowshare()
         self.storage       = self.Storage(storage_path, storage_size)
 
+    def close(self):
+        self.file_database.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
     def upload(self, file_path):
         # Check if file exists
         key = helpers.sha256(file_path)
