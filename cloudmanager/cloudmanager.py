@@ -24,6 +24,12 @@ class CloudManager(object):
         self.close()
 
     def upload(self, file_path):
+        """Adds a file to the cloud.
+
+        If the given file didn't exist yet, this method
+        makes room for it (by deleting older cached files)
+        and then uploads it to three different cloud hosts.
+        """
         # Check if file exists
         key = helpers.sha256(file_path)
         if self.exists(key):
@@ -38,7 +44,17 @@ class CloudManager(object):
         saved_path = self.storage.add(file_path, key)
         self.file_database.store(saved_path, info, True)
 
+    def download(self, file_hash):
+        """Warms up the cache for the given hash"""
+        return self.warm_up(file_hash)
+
     def warm_up(self, file_hash):
+        """Warms up the cache for the given hash
+
+        This method makes room for the given file,
+        and then fetches it from one of the cloud hosts.
+
+        """
         record = self.file_database.fetch(file_hash)
         if record.is_cached:
             return True
@@ -51,17 +67,26 @@ class CloudManager(object):
         self.file_database.restored_to_cache(record.hash)
 
     def usage_ratio(self):
+        """Returns the percentage of used space."""
         return 1.0 * self.storage.used() / self.storage.size()
 
     def exists(self, file_hash):
+        """Checks if a given file is in this cloud system."""
         return self.file_database.fetch(file_hash) != None
 
     def on_cache(self, file_hash):
+        """Checks if a given file is on cache."""
         record = self.file_database.fetch(file_hash)
 
         return record != None and record.is_cached == True
 
     def make_room_for(self, needed):
+        """Makes room in the storage space.
+
+        This method deletes files from the storage space
+        until the given number of bytes fits into it.
+
+        """
         if not self.storage.fits(needed):
             return False
 

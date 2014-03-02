@@ -13,10 +13,13 @@ Manages a pool of files uploaded to "the cloud"
 
     cm.upload("/path/to/file")       # returns hash of the uploaded file, or error
 
-    cm.download("6f7bed7...121b2")   # Puts the corresponding file in cache
-
-    cm.store(json_payload)           # Not part of the public API, upload/download should manage this.
+    cm.warm_up("6f7bed7...121b2")    # Puts the corresponding file in cache
+    cm.download("6f7bed7...121b2")   # Same as warm_up
 
     cm.exists("6f7bed7...121b2")     # returns true if the file exists on the database
     cm.on_cache("6f7bed7...121b2")   # returns true if the file is on cache
+
+    cm.usage_ratio()                 # Returns the storage usage percentage
+
+    cm.close()                       # cleans up everything.
 

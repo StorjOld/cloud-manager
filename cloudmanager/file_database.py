@@ -34,7 +34,10 @@ class FileDatabase(object):
     def store(self, file_name, cloud_info, is_cached):
         cursor = self.db.cursor()
         cursor.execute(
-            "INSERT INTO files (name, hash, size, payload, is_cached) VALUES(?, ?, ?, ?, ?);",
+            """
+                INSERT INTO files (name, hash, size, payload, is_cached)
+                VALUES(?, ?, ?, ?, ?);
+            """,
             [file_name,
               cloud_info["filehash"],
               int(cloud_info["filesize"]),
@@ -61,15 +64,15 @@ class FileDatabase(object):
         cursor = self.db.cursor()
         result = cursor.execute(
             """
-              SELECT * FROM
-                  (SELECT * FROM files
-                   WHERE size >= ? AND is_cached
-                   ORDER BY size LIMIT 1) x
-              UNION
-              SELECT * FROM
-                  (SELECT * FROM files
-                   WHERE is_cached
-                   ORDER BY size DESC LIMIT 1) y;
+                SELECT * FROM
+                    (SELECT * FROM files
+                        WHERE size >= ? AND is_cached
+                        ORDER BY size LIMIT 1) x
+                UNION
+                SELECT * FROM
+                    (SELECT * FROM files
+                        WHERE is_cached
+                        ORDER BY size DESC LIMIT 1) y;
             """, [size])
 
         row = result.fetchone()
