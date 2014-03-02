@@ -1,0 +1,12 @@
+#! /bin/bash
+#
+# NOTE: These are just stubs to help testing
+# without actually uploading stuff to the cloud.
+
+url="$1"
+directory="$3"
+basename="$(basename "$url")"
+
+cp "cloud/$basename" "$directory"
+
+echo "$directory/$basename"

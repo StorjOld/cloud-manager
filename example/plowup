@@ -1,0 +1,11 @@
+#! /bin/bash
+#
+# NOTE: These are just stubs to help testing
+# without actually uploading stuff to the cloud.
+
+filepath="$2"
+basename="$(basename "$filepath")"
+
+cp "$filepath" "cloud/$basename"
+
+echo "http://fileshare.com/$basename"
