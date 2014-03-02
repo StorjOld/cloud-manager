@@ -45,12 +45,14 @@ class FileDatabase(object):
         cursor.execute(
             "UPDATE files SET is_cached = ? WHERE hash = ?;",
             [False, file_hash])
+        self.db.commit()
 
     def restored_to_cache(self, file_hash):
         cursor = self.db.cursor()
         cursor.execute(
             "UPDATE files SET is_cached = ? WHERE hash = ?;",
             [True, file_hash])
+        self.db.commit()
 
     def closest_cache_in_size(self, size):
         cursor = self.db.cursor()
