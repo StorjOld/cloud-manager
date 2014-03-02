@@ -18,7 +18,7 @@ class FileDatabase(object):
 
         row = result.fetchone()
 
-        return row
+        return self.convert(row)
 
     def store(self, file_name, cloud_info, is_cached):
         cursor = self.db.cursor()
@@ -55,4 +55,16 @@ class FileDatabase(object):
                   (SELECT * FROM files ORDER BY size DESC LIMIT 1) y;""", [size])
 
         row = result.fetchone()
-        return row
+        return self.convert(row)
+
+    def convert(self, row):
+      if row == None:
+          return None
+
+      return {
+          'name': row['name'],
+          'hash': row['hash'],
+          'size': row['size'],
+          'payload': json.loads(row['payload']),
+          'is_cached': row['is_cached']
+      }
