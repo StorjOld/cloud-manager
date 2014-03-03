@@ -79,11 +79,15 @@ class CloudManager(object):
 
         This method makes room for the given file,
         and then fetches it from one of the cloud hosts.
+        It returns the full path of the file.
 
         """
         record = self.file_database.fetch(file_hash)
+        if record is None:
+            return None
+
         if record.is_cached:
-            return True
+            return self.storage.path(record.name)
 
         self.make_room_for(record.size)
 
@@ -92,6 +96,12 @@ class CloudManager(object):
 
         self.file_database.restored_to_cache(record.hash)
         self.meter.measure_upload(record.size)
+
+        return self.storage.path(record.name)
+
+
+    def used_space(self):
+        return self.storage.used()
 
     def usage_ratio(self):
         """Return the percentage of used space."""

@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='cloudmanager',
-    version='0.2.0',
+    version='0.3.0',
     author='Hugo Peixoto',
     author_email='hugo.peixoto@gmail.com',
     packages=['cloudmanager'],
@@ -13,6 +13,5 @@ setup(
     long_description=open('README.md').read(),
     install_requires=[
         'plowshare >= 0.2.0',
-        'sqlite3',
     ],
 )

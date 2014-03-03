@@ -30,12 +30,13 @@ class Storage(object):
         filename = file_hash[:7] + "_" + os.path.basename(file_path)
         shutil.copyfile(
             file_path,
-            self.storage_path + "/" + filename)
+            self.path(filename))
+
         return filename
 
     def remove(self, filename):
         """Remove a file from local storage."""
-        os.remove(self.storage_path + "/" + filename)
+        os.remove(self.path(filename))
 
     def used(self):
         """Return number of bytes used."""
@@ -44,3 +45,7 @@ class Storage(object):
     def size(self):
         """Return the local storage capacity, in bytes."""
         return self.storage_size
+
+    def path(self, filename):
+        """Return the full path of a file that is to be stored in local cache."""
+        return self.storage_path + "/" + filename
