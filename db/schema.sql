@@ -4,3 +4,7 @@ CREATE TABLE files (
   hash varchar,
   payload text,
   is_cached boolean);
+
+CREATE TABLE transfer_meter (
+  uploaded integer,
+  downloaded integer);
