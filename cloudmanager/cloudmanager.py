@@ -62,7 +62,7 @@ class CloudManager(object):
 
         info = self.plowshare.upload(file_path, 3)
         saved_path = self.storage.add(file_path, key)
-        self.file_database.store(saved_path, info, True)
+        self.file_database.store(saved_path, info)
         self.meter.measure_upload(needed)
         return key
 
@@ -78,17 +78,14 @@ class CloudManager(object):
         if record is None:
             return None
 
-        if record.is_cached:
+        if self.storage.is_cached(record.name):
             return self.storage.path(record.name)
 
-        self.make_room_for(record.size)
+        if not self.make_room_for(record.size):
+            return False
 
-        # Plowshare shouldn't determine the filename.
-        ret = self.plowshare.download(record.payload, self.storage.storage_path)
-
-        self.file_database.restored_to_cache(record.hash)
+        self.plowshare.download(record.payload, self.storage.storage_path)
         self.meter.measure_upload(record.size)
-
         return self.storage.path(record.name)
 
     def download(self, file_hash):
@@ -119,7 +116,8 @@ class CloudManager(object):
         """Check if a given file is on cache."""
         record = self.file_database.fetch(file_hash)
 
-        return record != None and record.is_cached == True
+        return record != None and self.storage.is_cached(record.name)
+
 
     def make_room_for(self, needed):
         """Make room in the storage space.
@@ -133,9 +131,16 @@ class CloudManager(object):
 
         used_space = self.storage.used()
         while not self.storage.fits(used_space + needed):
-            to_be_removed = self.file_database.closest_cache_in_size(needed)
+            to_be_removed = self.removal_candidate(needed)
 
             self.storage.remove(to_be_removed.name)
-            self.file_database.removed_from_cache(to_be_removed.hash)
             used_space -= to_be_removed.size
 
+        return True
+
+    def removal_candidate(self, needed):
+        for f in self.file_database.removal_candidates(needed):
+            if self.storage.is_cached(f.name):
+                return f
+
+        return None

@@ -34,6 +34,9 @@ class Storage(object):
 
         return filename
 
+    def is_cached(self, name):
+        return os.path.exists(self.path(name))
+
     def remove(self, filename):
         """Remove a file from local storage."""
         os.remove(self.path(filename))

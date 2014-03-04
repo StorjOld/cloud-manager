@@ -12,7 +12,6 @@ class FileRecord(object):
         self.hash      = record['hash']
         self.size      = record['size']
         self.payload   = json.loads(record['payload'])
-        self.is_cached = record['is_cached']
 
 class FileDatabase(object):
     """FileDatabase stores information on all uploaded files.
@@ -38,62 +37,56 @@ class FileDatabase(object):
 
         return self.convert(row)
 
-    def store(self, file_name, cloud_info, is_cached):
+    def store(self, file_name, cloud_info):
         """Store information regarding an uploaded file.
 
         Arguments:
         file_name  -- Basename of the uploaded file
         cloud_info -- Information provided by plowshare
-        is_cached  -- Boolean indicating if the file is in local cache
         """
         cursor = self.db.cursor()
         cursor.execute(
             """
-                INSERT INTO files (name, hash, size, payload, is_cached)
-                VALUES(?, ?, ?, ?, ?);
+                INSERT INTO files (name, hash, size, payload)
+                VALUES(?, ?, ?, ?);
             """,
             [file_name,
               cloud_info["filehash"],
               int(cloud_info["filesize"]),
-              json.dumps(cloud_info),
-              is_cached])
+              json.dumps(cloud_info)])
 
         self.db.commit()
 
-    def removed_from_cache(self, file_hash):
-        """Notify the database that a file was removed from local cache."""
-        cursor = self.db.cursor()
-        cursor.execute(
-            "UPDATE files SET is_cached = ? WHERE hash = ?;",
-            [False, file_hash])
-        self.db.commit()
+    def removal_candidates(self, size):
+        """List files to be removed.
 
-    def restored_to_cache(self, file_hash):
-        """Notify the database that a file was restored to local cache."""
-        cursor = self.db.cursor()
-        cursor.execute(
-            "UPDATE files SET is_cached = ? WHERE hash = ?;",
-            [True, file_hash])
-        self.db.commit()
+        This method determines which file should
+        be removed in order to free the given number
+        of bytes. It yields them, ordered by preference.
 
-    def closest_cache_in_size(self, size):
-        """Determine which file should be removed to free a given number of bytes."""
+        """
         cursor = self.db.cursor()
         result = cursor.execute(
             """
                 SELECT * FROM
                     (SELECT * FROM files
-                        WHERE size >= ? AND is_cached
-                        ORDER BY size LIMIT 1) x
+                        WHERE size >= ?
+                        ORDER BY size ASC) x
                 UNION
                 SELECT * FROM
                     (SELECT * FROM files
-                        WHERE is_cached
-                        ORDER BY size DESC LIMIT 1) y;
-            """, [size])
+                        WHERE size < ?
+                        ORDER BY size DESC) y;
+            """, [size, size])
 
-        row = result.fetchone()
-        return self.convert(row)
+        while True:
+            row = result.fetchone()
+            if row is None:
+                return
+
+            yield self.convert(row)
+
+        result.close()
 
     def convert(self, row):
         """Convert a database row into a file record."""
