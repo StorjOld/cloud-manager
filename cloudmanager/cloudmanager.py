@@ -53,7 +53,7 @@ class CloudManager(object):
         # Check if file exists
         key = helpers.sha256(file_path)
         if self.exists(key):
-            return False
+            return key
 
         needed = os.path.getsize(file_path)
 
