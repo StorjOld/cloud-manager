@@ -2,11 +2,12 @@ from distutils.core import setup
 
 setup(
     name='cloudmanager',
-    version='0.4.0',
+    version='0.4.1',
     author='Hugo Peixoto',
     author_email='hugo.peixoto@gmail.com',
     packages=['cloudmanager'],
     scripts=[],
+    package_data={'cloudmanager':['schema.sql']},
     url='https://github.com/super3/cloud-manager',
     license='LICENSE.txt',
     description='Manages a pool of files uploaded to "the cloud"',
