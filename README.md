@@ -30,12 +30,14 @@ you can build a package and install it through pip (recommended):
 #### Module usage
 
 To use this, one must create a database first. A schema file is available in
-`db/schema.sql`. You can create a database by piping this file into sqlite3:
+`cloudmanager/schema.sql`. There's also a helper tool, `cloudmanger.setup_db`,
+to load this schema:
 
-    sqlite3 db/production.sqlite3 < db/schema.sql
+    python -mcloudmanager.setup_db db/production.sqlite3
 
 
-To use this, you need to provide three elements:
+After creating the database, the module is ready to be used. One must provide
+three parameters:
 
 - File database location (sqlite3)
 - Storage location (where to store the cached files)
