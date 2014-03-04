@@ -57,7 +57,7 @@ class CloudManager(object):
 
         needed = os.path.getsize(file_path)
 
-        if self.make_room_for(needed) == False:
+        if not self.make_room_for(needed):
             return False
 
         info = self.plowshare.upload(file_path, 3)
@@ -65,14 +65,6 @@ class CloudManager(object):
         self.file_database.store(saved_path, info, True)
         self.meter.measure_upload(needed)
         return key
-
-    def download(self, file_hash):
-        """Warm up the cache for the given hash.
-
-        Same as warm_up.
-
-        """
-        return self.warm_up(file_hash)
 
     def warm_up(self, file_hash):
         """Warm up the cache for the given hash
@@ -98,6 +90,10 @@ class CloudManager(object):
         self.meter.measure_upload(record.size)
 
         return self.storage.path(record.name)
+
+    def download(self, file_hash):
+        """Same as warm_up."""
+        return self.warm_up(file_hash)
 
 
     def used_space(self):
