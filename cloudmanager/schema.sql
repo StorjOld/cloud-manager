@@ -8,3 +8,5 @@ CREATE TABLE files (
 CREATE TABLE transfer_meter (
   uploaded integer,
   downloaded integer);
+
+INSERT INTO transfer_meter VALUES(0, 0);
