@@ -60,8 +60,30 @@ class FileDatabase(object):
 
         self.db.commit()
 
+
+    def data_load(self, data, blockchain_hash):
+        """Load a blockchain json.
+
+        This method loads all file metadata within the
+        given payload. It updates all included files to
+        register the blockchain identifier.
+
+        """
+        payload = json.loads(data)
+        for f in payload:
+            self.store(f['filehash'][0:16], f)
+
+        cursor = self.db.cursor()
+        cursor.execute(
+            """UPDATE files set blockchain_hash = ? WHERE hash IN ({0})""".format(
+                ','.join(["'" + f["filehash"] + "'" for f in payload])),
+            [blockchain_hash])
+
+        self.db.commit()
+
+
     def data_dump(self, data_limit):
-        """Dumps a blockchain json.
+        """Dump a blockchain json.
 
         This method dumps a json with as many file metadata
         as it can fit in data_limit (in bytes). If there is
@@ -86,6 +108,7 @@ class FileDatabase(object):
         # json.loads() the payload just to json.dumps() it
         # right after.
         return "[%s]" % ','.join([r['payload'] for r in records])
+
 
     def exportee_candidates(self, data_limit):
         """Select files to export."""
@@ -114,16 +137,6 @@ class FileDatabase(object):
             files.append(record)
 
         return files
-
-    def detected_on_blockchain(self, file_hash, blockchain_hash):
-        """Mark a file identified by the given hash as being in the blockchain."""
-
-        cursor = self.db.cursor()
-        cursor.execute(
-            """UPDATE files SET blockchain_hash = ? WHERE hash = ?""",
-            [blockchain_hash, file_hash])
-
-        self.db.commit()
 
 
     def removal_candidates(self, size):
