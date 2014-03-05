@@ -43,17 +43,20 @@ class FileDatabase(object):
         Arguments:
         file_name  -- Basename of the uploaded file
         cloud_info -- Information provided by plowshare
+
         """
         cursor = self.db.cursor()
         cursor.execute(
             """
                 INSERT INTO files (name, hash, size, payload)
-                VALUES(?, ?, ?, ?);
+                SELECT ?, ?, ?, ?
+                WHERE NOT EXISTS (SELECT 1 FROM files WHERE hash = ?);
             """,
             [file_name,
               cloud_info["filehash"],
               int(cloud_info["filesize"]),
-              json.dumps(cloud_info)])
+              json.dumps(cloud_info),
+              cloud_info["filehash"]])
 
         self.db.commit()
 
