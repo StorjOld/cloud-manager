@@ -108,6 +108,16 @@ Retrieve the total number of bytes downloaded and uploaded.
     cm.uploaded()
 
 
+Retrieve blockchain json dump:
+
+    cm.data_dump(max_byte_size)
+
+
+Notify that a file has been seen on the blockchain:
+
+    cm.detected_on_blockchain(file_hash, blockchain_hash)
+
+
 Release all resources associated with the cloud manager instance.
 
     cm.close()
