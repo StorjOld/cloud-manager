@@ -118,6 +118,13 @@ class CloudManager(object):
 
         return record != None and self.storage.is_cached(record.name)
 
+    def detected_on_blockchain(self, file_hash, blockchain_hash):
+        """Mark a file as being stored on the blockchain."""
+        return self.file_database.detected_on_blockchain(file_hash, blockchain_hash)
+
+    def data_dump(self, data_limit):
+        """Dump json to be inserted in the blockchain."""
+        return self.file_database.data_dump(data_limit)
 
     def make_room_for(self, needed):
         """Make room in the storage space.
