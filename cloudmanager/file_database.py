@@ -1,5 +1,4 @@
 import sqlite3
-import json
 
 class FileRecord(object):
     """FileRecord represents a file tracked by the database.
@@ -11,7 +10,7 @@ class FileRecord(object):
         self.name      = record['name']
         self.hash      = record['hash']
         self.size      = record['size']
-        self.payload   = json.loads(record['payload'])
+        self.payload   = record['payload']
 
 class FileDatabase(object):
     """FileDatabase stores information on all uploaded files.
@@ -37,12 +36,14 @@ class FileDatabase(object):
 
         return self.convert(row)
 
-    def store(self, file_name, cloud_info):
+    def store(self, key, size, name, payload):
         """Store information regarding an uploaded file.
 
         Arguments:
-        file_name  -- Basename of the uploaded file
-        cloud_info -- Information provided by plowshare
+        key        -- Unique file identifier (usually sha256)
+        size       -- Size of the file, in bytes
+        name       -- File name
+        payload    -- Blockchain payload
 
         """
         cursor = self.db.cursor()
@@ -52,91 +53,70 @@ class FileDatabase(object):
                 SELECT ?, ?, ?, ?
                 WHERE NOT EXISTS (SELECT 1 FROM files WHERE hash = ?);
             """,
-            [file_name,
-              cloud_info["filehash"],
-              int(cloud_info["filesize"]),
-              json.dumps(cloud_info),
-              cloud_info["filehash"]])
+            [name, key, size, payload, key])
 
         self.db.commit()
 
 
-    def data_load(self, data, blockchain_hash):
-        """Load a blockchain json.
+    def import_files(self, records, blockchain_hash):
+        """Import file metadata associated with a blockchain hash.
 
         This method loads all file metadata within the
         given payload. It updates all included files to
         register the blockchain identifier.
 
         """
-        payload = json.loads(data)
-        for f in payload:
-            self.store(f['filehash'][0:16], f)
+        files = [self.convert(r) for r in records]
+
+        for f in files:
+            self.store(f.hash, f.size, f.name, f.payload)
 
         cursor = self.db.cursor()
         cursor.execute(
-            """UPDATE files set blockchain_hash = ? WHERE hash IN ({0})""".format(
-                ','.join(["'" + f["filehash"] + "'" for f in payload])),
+            """
+                UPDATE files set blockchain_hash = ?
+                WHERE hash IN ({0})
+            """.format(','.join(
+                ["'%s'" % f.hash for f in files])),
             [blockchain_hash])
 
         self.db.commit()
+        return True
 
 
-    def data_dump(self, data_limit):
-        """Dump a blockchain json.
-
-        This method dumps a json with as many file metadata
-        as it can fit in data_limit (in bytes). If there is
-        nothing to export, it returns None.
-
-        """
-        records = self.exportee_candidates(data_limit)
-        if len(records) == 0:
-            return None
-
+    def mark_exported(self, files):
         cursor = self.db.cursor()
         cursor.execute(
             """
                 UPDATE files SET exported_timestamp = datetime('now')
                 WHERE hash IN ({0})
             """.format(','.join(
-                ["'%s'" % r['hash'] for r in records])))
+                ["'%s'" % f.hash for f in files])))
 
         self.db.commit()
 
-        # Build the json manually so that we don't have to
-        # json.loads() the payload just to json.dumps() it
-        # right after.
-        return "[%s]" % ','.join([r['payload'] for r in records])
 
-
-    def exportee_candidates(self, data_limit):
-        """Select files to export."""
+    def blockchain_candidates(self):
+        """Iterate through unexported files."""
 
         cursor = self.db.cursor()
-        cursor.execute(
+        result = cursor.execute(
             """
-                SELECT hash, payload FROM files
+                SELECT * FROM files
                 WHERE blockchain_hash IS NULL
                 AND (exported_timestamp IS NULL OR
                     exported_timestamp < DATE(datetime('now'), '-1 hour'))
                 ORDER BY length(payload);
             """)
 
-        files      = []
-        byte_count = 2
+        while True:
+            row = result.fetchone()
+            if row is None:
+                return
 
-        for record in cursor:
-            json = record['payload']
-            # two bytes for the array boundaries, one per comma delimiter (n-1),
-            # and all the payloads.
-            if 2 + len(files) + byte_count + len(json) > data_limit:
-                break
+            yield self.convert(row)
 
-            byte_count += len(json)
-            files.append(record)
-
-        return files
+        result.close()
 
 
     def removal_candidates(self, size):
@@ -169,6 +149,7 @@ class FileDatabase(object):
             yield self.convert(row)
 
         result.close()
+
 
     def convert(self, row):
         """Convert a database row into a file record."""

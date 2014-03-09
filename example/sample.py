@@ -1,23 +1,25 @@
 import cloudmanager
 
 # This sample uploads a few sample files.
-# 
+#
 # The limit is set to 20 MiB to force some
 # files to be purged from cache.
 
-readme = "5fb6fa809129cd4ad42e97b01463fdd9f1bb0c72ba9ac97a578211c8ac5bce0a"
-rogues = "7d3dae3fd5ca0a4086983bf534f56705ff8a569d9d1c0c33c977f58ea3fa79cd"
-crates = "f5a3f4e75ec2832ef3c9c485d91b5f880808cb8740d6d5b5386cd2ac40a0ac4b"
+readme = "5ad70c0c7cc50a73600df290e545cd9d2c83a815ce63c8bce400b867f1b4f5b5"
+nostro = "dc28c33939823340bdb7a5826d09eca991d6274a3cd4411e280c2a65bcc684cc"
 
-with cloudmanager.CloudManager("db/test.sqlite3", "storage", 20 * (2**20)) as cm:
+with cloudmanager.CloudManager("db/files.db", "storage", 20 * (2**20)) as cm:
     print cm.exists(readme)
     print cm.on_cache(readme)
     print cm.usage_ratio()
 
     print "uploading", cm.upload("README.md")
-    print "uploading", cm.upload("RubyRogues20111116.mp3")
-    print "uploading", cm.upload("supercrateboxosx.zip")
+    print "uploading", cm.upload("nostromo.mp3")
 
     print "warming", cm.warm_up(readme)
-    print "warming", cm.warm_up(rogues)
-    print "warming", cm.warm_up(crates)
+    print "warming", cm.warm_up(nostro)
+
+    data = cm.data_dump(128000)
+    print data
+
+    print cm.data_load(data, "blockchain-hash")

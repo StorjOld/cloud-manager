@@ -1,9 +1,11 @@
 import os
 import plowshare
+import json
 
 import file_database
 import storage
 import transfer_meter
+import payload
 import helpers
 
 class CloudManager(object):
@@ -14,6 +16,8 @@ class CloudManager(object):
     in a local database. It also keeps a local cache.
 
     """
+    RedundancyLevel = 3
+
     Plowshare = plowshare.Plowshare
     Database  = file_database.FileDatabase
     Storage   = storage.Storage
@@ -60,9 +64,11 @@ class CloudManager(object):
         if not self.make_room_for(needed):
             return False
 
-        info = self.plowshare.upload(file_path, 3)
+        uploads    = self.plowshare.upload(file_path, self.RedundancyLevel)
         saved_path = self.storage.add(file_path, key)
-        self.file_database.store(saved_path, info)
+        info       = json.dumps(payload.to_dict(payload.build(key, needed, uploads)))
+
+        self.file_database.store(key, needed, saved_path, info)
         self.meter.measure_upload(needed)
         return key
 
@@ -84,8 +90,11 @@ class CloudManager(object):
         if not self.make_room_for(record.size):
             return False
 
-        self.plowshare.download(record.payload, self.storage.storage_path)
+        info = payload.from_dict(json.loads(record.payload))
+
+        self.plowshare.download(info.uploads, self.storage.storage_path, record.name)
         self.meter.measure_upload(record.size)
+
         return self.storage.path(record.name)
 
     def download(self, file_hash):
@@ -120,11 +129,25 @@ class CloudManager(object):
 
     def data_dump(self, data_limit):
         """Dump json to be inserted in the blockchain."""
-        return self.file_database.data_dump(data_limit)
+        files = self.export_candidates(data_limit)
 
-    def data_load(self, payload, blockchain_hash):
+        self.file_database.mark_exported(files)
+
+        return json.dumps([json.loads(record.payload) for record in files])
+
+    def data_load(self, data, blockchain_hash):
         """Load json from the blockchain."""
-        return self.file_database.data_load(payload, blockchain_hash)
+        payloads = payload.from_blockchain_payload(data)
+        if payloads is None:
+            return None
+
+        files = [{
+            "name": p.hash[0:10],
+            "hash": p.hash,
+            "size": p.size,
+            "payload": payload.serialize(p) } for p in payloads]
+
+        return self.file_database.import_files(files, blockchain_hash)
 
     def make_room_for(self, needed):
         """Make room in the storage space.
@@ -151,3 +174,18 @@ class CloudManager(object):
                 return f
 
         return None
+
+    def export_candidates(self, data_limit):
+        files = []
+        byte_count = 2
+
+        for record in self.file_database.blockchain_candidates():
+            json = record.payload
+            # "[]", ", ", files
+            if 2 + byte_count + 2*len(files) + len(json) > data_limit:
+                break
+
+            byte_count += len(json)
+            files.append(record)
+
+        return files
