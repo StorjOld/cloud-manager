@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='cloudmanager',
-    version='0.5.2',
+    version='0.6.0',
     author='Hugo Peixoto',
     author_email='hugo.peixoto@gmail.com',
     packages=['cloudmanager'],
