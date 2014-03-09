@@ -23,7 +23,8 @@ class CloudCoin(object):
             for txid, data in dw.transactions(block):
                 try:
                     info = json.loads(data)
-                    info["version"] ## checking if the key exists
+                    ## checking if the key exists
+                    [payload["version"] for payload in info]
                 except:
                     continue
 
