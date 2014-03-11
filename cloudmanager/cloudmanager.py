@@ -130,8 +130,10 @@ class CloudManager(object):
     def data_dump(self, data_limit):
         """Dump json to be inserted in the blockchain."""
         files = self.export_candidates(data_limit)
-
         self.file_database.mark_exported(files)
+
+        if len(files) == 0:
+            return None
 
         return json.dumps([json.loads(record.payload) for record in files])
 
