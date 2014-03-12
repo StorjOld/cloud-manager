@@ -3,16 +3,18 @@ import json
 
 class Payload(object):
     def __init__(self):
+        self.name     = ""
         self.hash     = ""
         self.size     = ""
         self.datetime = ""
         self.uploads  = []
 
 
-def build(hash, size, uploads):
+def build(name, hash, size, uploads):
     """Build a payload for a new upload."""
     p = Payload()
 
+    p.name     = name
     p.hash     = hash
     p.size     = size
     p.datetime = str(int(time.time()))
@@ -24,7 +26,8 @@ def build(hash, size, uploads):
 def to_dict(payload):
     """Serialize a payload into a json compatible object."""
     return {
-        "version":  "0.1",
+        "version":  "0.2",
+        "filename": payload.name,
         "filesize": payload.size,
         "filehash": payload.hash,
         "datetime": payload.datetime,
@@ -50,14 +53,23 @@ def serialize(payload):
 
 def from_dict(data):
     """Deserialize a payload from a json compatible object."""
-    p = Payload()
 
-    if data["version"] != "0.1":
-        return None
-    
-    p.size     = data["filesize"]
-    p.hash     = data["filehash"]
-    p.datetime = data["datetime"]
-    p.uploads  = data["uploads"]
+    if data["version"] == "0.2":
+        p = Payload()
+        p.name     = data["filename"]
+        p.size     = data["filesize"]
+        p.hash     = data["filehash"]
+        p.datetime = data["datetime"]
+        p.uploads  = data["uploads"]
+        return p
 
-    return p
+    if data["version"] == "0.1":
+        p = Payload()
+        p.name     = data["filehash"][0:10]
+        p.size     = data["filesize"]
+        p.hash     = data["filehash"]
+        p.datetime = data["datetime"]
+        p.uploads  = data["uploads"]
+        return p
+
+    return None

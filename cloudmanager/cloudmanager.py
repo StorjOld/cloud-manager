@@ -66,7 +66,7 @@ class CloudManager(object):
 
         uploads    = self.plowshare.upload(file_path, self.RedundancyLevel)
         saved_path = self.storage.add(file_path, key)
-        info       = json.dumps(payload.to_dict(payload.build(key, needed, uploads)))
+        info       = json.dumps(payload.to_dict(payload.build(saved_path, key, needed, uploads)))
 
         self.file_database.store(key, needed, saved_path, info)
         self.meter.measure_upload(needed)
@@ -144,7 +144,7 @@ class CloudManager(object):
             return None
 
         files = [{
-            "name": p.hash[0:10],
+            "name": p.name,
             "hash": p.hash,
             "size": p.size,
             "payload": payload.serialize(p) } for p in payloads]
