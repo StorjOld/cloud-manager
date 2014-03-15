@@ -12,26 +12,14 @@ faster.
 
 #### Installation
 
-This module depends on the `plowshare` module. Please install that first, by
-following the instructions in its
-[repository](https://github.com/super3/plowshare-wrapper). It is preferable
-that you use the pip installation method.
-
-This module, due to its dependency on `plowshare-wrapper`, presumes
-that you already have plowshare installed in your system correctly.
-
-You can clone this repository and use its modules directly. Alternatively,
-you can build a package and install it through pip (recommended):
-
-    python setup.py sdist
-    sudo pip install dist/cloudmanager-0.1.0.tar.gz
+Check [INSTALL.md](INSTALL.md) for installation instructions.
 
 
 #### Module usage
 
-To use this, one must create a database first. A schema file is available in
-`cloudmanager/schema.sql`. There's also a helper tool, `cloudmanger.setup_db`,
-to load this schema:
+`cloudmanager` requires a database to function properly. An SQL schema is available
+in [cloudmanager/schema.sql](cloudmanager/schema.sql). There is also a helper tool,
+`cloudmanager.setup_db`, to load this schema:
 
     python -mcloudmanager.setup_db db/production.sqlite3
 
@@ -66,59 +54,37 @@ Here's an usage example:
     cm.close()                       # cleans up everything.
 
 
+#### Serialization format
+
+`cloudmanager` supports data export/import, through `data_load` and
+`data_dump`, so that you can synchronize multiple nodes. Each of the uploaded
+files exports the following information:
+
+- version (if the json format changes, this will change too)
+- file name (basename)
+- file size (bytes)
+- file hash (SHA-256)
+- datetime (Unix timestamp)
+- uploads (list of hosts and URLs)
+
+Here's an example:
+
+    {
+      version: "0.1",
+      datetime: "1391212800",
+      filename: "README.md",
+      filesize: "23124",
+      filehash: "6e163442e29ec8d7538bc86fe2c4a48778e8ae2254632f0889da753b1c357b1b",
+      "uploads": [
+        { "host_name": "mediafire",  "url":"http://www.mediafire.com/?qorncpzfe74s9" },
+        { "host_name": "rapidshare", "url":"http://rapidshare.com/files/130403982" },
+        { "host_name": "anonfiles",  "error":true }
+      ]
+    }
+
+
 #### Documentation
 
-
-Build a new cloudmanager instance.
-
-    cm = cloudmanager.CloudManager(
-        database_path,
-        storage_path
-        storage_size)
-
-
-Upload a file to the cloud. Creates a copy in local cache.
-
-    cm.upload(file_path)
-
-
-Put a previously uploaded file in local cache.
-
-    cm.warm_up(file_hash)
-    cm.download(file_hash)
-
-Check if a file matching the given hash has been uploaded previously.
-
-    cm.exists(file_hash)
-
-
-Check if a file matching the given hash is currently on local cache.
-
-    cm.on_cache(file_hash)
-
-
-Calculate the current usage ratio of the local cache.
-
-    cm.usage_ratio()
-
-
-Retrieve the total number of bytes downloaded and uploaded.
-
-    cm.downloaded()
-    cm.uploaded()
-
-
-Retrieve blockchain json dump:
-
-    cm.data_dump(max_byte_size)
-
-
-Notify that a file has been seen on the blockchain:
-
-    cm.detected_on_blockchain(file_hash, blockchain_hash)
-
-
-Release all resources associated with the cloud manager instance.
-
-    cm.close()
+    import cloudmanager
+    help(cloudmanager.CloudManager)
 
