@@ -70,7 +70,7 @@ files exports the following information:
 Here's an example:
 
     {
-      version: "0.1",
+      version: "0.2",
       datetime: "1391212800",
       filename: "README.md",
       filesize: "23124",
