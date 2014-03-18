@@ -102,6 +102,7 @@ class CloudManager(object):
         return self.warm_up(file_hash)
 
     def info(self, file_hash):
+        """Return file information for a given hash."""
         record = self.file_database.fetch(file_hash)
         if record is None:
             return None
@@ -109,9 +110,11 @@ class CloudManager(object):
         return json.loads(record.payload)
 
     def used_space(self):
+        """Return this node's storage usage."""
         return self.storage.used()
 
     def capacity(self):
+        """Return this node's local storage capacity."""
         return self.storage.size()
 
     def usage_ratio(self):
