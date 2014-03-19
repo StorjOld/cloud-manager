@@ -234,3 +234,26 @@ class CloudManager(object):
 
     def upload_candidates(self):
         return self.file_database.upload_candidates()
+
+
+    def sync_status(self):
+        not_yet_blockchained = self.file_database.blockchain_candidates()
+        not_yet_cloudshared  = self.file_database.upload_candidates()
+
+        return {
+            "to_be_cloudshared": [self.dict_description(f) for f in not_yet_cloudshared],
+            "to_be_blockchained": [self.dict_description(f) for f in not_yet_blockchained]
+        }
+
+    def dict_description(self, f):
+        base = {
+            "filename": f.name,
+            "filehash": f.hash,
+            "filesize": f.size,
+        }
+
+        if f.payload is not None:
+            base['uploads'] = json.loads(f.payload)['uploads']
+            base['datetime'] = json.loads(f.payload)['datetime']
+
+        return base
