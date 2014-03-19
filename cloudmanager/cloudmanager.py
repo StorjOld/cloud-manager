@@ -53,8 +53,21 @@ class CloudManager(object):
         If the given file didn't exist yet, this method
         makes room for it (by deleting older cached files)
         and then uploads it to three different cloud hosts.
+
         """
-        # Check if file exists
+        key     = self.add_to_storage(file_path)
+        uploads = self.plowshare.upload(file_path, self.RedundancyLevle)
+
+        self.on_upload_finished(key, uploads)
+        return key
+
+    def add_to_storage(self, file_path):
+        """Add a file to local storage.
+
+        This method also registers the file in the database,
+        without any payload information.
+
+        """
         key = helpers.sha256(file_path)
         if self.exists(key):
             return key
@@ -64,13 +77,21 @@ class CloudManager(object):
         if not self.make_room_for(needed):
             return False
 
-        uploads    = self.plowshare.upload(file_path, self.RedundancyLevel)
         saved_path = self.storage.add(file_path, key)
-        info       = json.dumps(payload.to_dict(payload.build(saved_path, key, needed, uploads)))
-
-        self.file_database.store(key, needed, saved_path, info)
+        self.file_database.store(key, needed, saved_path, None)
         self.meter.measure_upload(needed)
         return key
+
+    def on_upload_finished(self, key, uploads):
+        record = self.file_database.fetch(file_hash)
+
+        info = json.dumps(payload.to_dict(payload.build(
+            record.name,
+            record.hash,
+            record.size,
+            uploads)))
+
+        self.file_database.set_payload(key, info)
 
     def warm_up(self, file_hash):
         """Warm up the cache for the given hash
@@ -86,6 +107,9 @@ class CloudManager(object):
 
         if self.storage.is_cached(record.name):
             return self.storage.path(record.name)
+
+        if record.payload is None:
+            return False
 
         if not self.make_room_for(record.size):
             return False

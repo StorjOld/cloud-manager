@@ -58,6 +58,19 @@ class FileDatabase(object):
         self.db.commit()
 
 
+    def set_payload(self, key, payload):
+        """Store payload for an existing file."""
+
+        cursor = self.db.cursor()
+        cursor.execute(
+            """
+                UPDATE files SET payload = ? WHERE hash = ?
+            """,
+            [payload, key])
+
+        self.db.commit()
+
+
     def import_files(self, records, blockchain_hash):
         """Import file metadata associated with a blockchain hash.
 
@@ -104,6 +117,7 @@ class FileDatabase(object):
             """
                 SELECT * FROM files
                 WHERE blockchain_hash IS NULL
+                AND payload IS NOT NULL
                 AND (exported_timestamp IS NULL OR
                     exported_timestamp < DATE(datetime('now'), '-1 hour'))
                 ORDER BY length(payload);
@@ -133,11 +147,13 @@ class FileDatabase(object):
                 SELECT * FROM
                     (SELECT * FROM files
                         WHERE size >= ?
+                        AND payload IS NOT NULL
                         ORDER BY size ASC) x
                 UNION
                 SELECT * FROM
                     (SELECT * FROM files
                         WHERE size < ?
+                        AND payload IS NOT NULL
                         ORDER BY size DESC) y;
             """, [size, size])
 
