@@ -47,51 +47,52 @@ class CloudManager(object):
     def __exit__(self, *args):
         self.close()
 
-    def upload(self, file_path, token):
+    def upload(self, file_path):
         """Add a file to the cloud.
 
         If the given file didn't exist yet, this method
-        makes room for it (by deleting older cached files)
-        and then uploads it to three different cloud hosts.
+        makes room for it (by deleting older cached files).
+        This file will be put in a queue to be uploaded to
+        multiple cloud hosts.
 
         """
         key = helpers.sha256(file_path)
         if self.exists(key):
             return key
 
-        self.add_to_storage(key, file_path, token)
-        uploads = self.plowshare.upload(file_path, self.RedundancyLevel)
-
-        self.on_upload_finished(key, uploads)
-        return key
-
-    def add_to_storage(self, key, file_path, token):
-        """Add a file to local storage.
-
-        This method also registers the file in the database,
-        without any payload information.
-
-        """
         needed = os.path.getsize(file_path)
 
         if not self.make_room_for(needed):
             return False
 
         saved_path = self.storage.add(file_path, key)
-        self.file_database.store(key, needed, saved_path, None, token)
+        self.file_database.store(key, needed, saved_path, None)
         self.meter.measure_upload(needed)
-        return saved_path
+        return key
 
-    def on_upload_finished(self, key, uploads):
-        record = self.file_database.fetch(key)
 
-        info = json.dumps(payload.to_dict(payload.build(
-            record.name,
-            record.hash,
-            record.size,
-            uploads)))
+    def cloud_sync(self):
+        """Upload files to the cloud.
 
-        self.file_database.set_payload(key, info)
+        This method checks the database for all files that
+        haven't yet been uploaded to the cloud, and processes
+        them.
+
+        """
+        for record in self.upload_candidates():
+            uploads = self.plowshare.upload(
+                self.storage.path(record.name),
+                self.RedundancyLevel)
+
+            # Probably not a good idea to have the serialization code in here.
+            info = json.dumps(payload.to_dict(payload.build(
+                record.name,
+                record.hash,
+                record.size,
+                uploads)))
+
+            self.file_database.set_payload(record.hash, info)
+
 
     def warm_up(self, file_hash):
         """Warm up the cache for the given hash
@@ -121,9 +122,11 @@ class CloudManager(object):
 
         return self.storage.path(record.name)
 
+
     def download(self, file_hash):
         """Same as warm_up."""
         return self.warm_up(file_hash)
+
 
     def info(self, file_hash):
         """Return file information for a given hash."""
@@ -132,10 +135,6 @@ class CloudManager(object):
             return None
 
         return json.loads(record.payload)
-
-    def key_by_token(self, token):
-        """Return a file hash given a request token."""
-        return self.file_database.key_by_token(token)
 
     def used_space(self):
         """Return this node's storage usage."""
@@ -191,6 +190,7 @@ class CloudManager(object):
 
         return self.file_database.import_files(files, blockchain_hash)
 
+
     def make_room_for(self, needed):
         """Make room in the storage space.
 
@@ -231,3 +231,6 @@ class CloudManager(object):
             files.append(record)
 
         return files
+
+    def upload_candidates(self):
+        return self.file_database.upload_candidates()

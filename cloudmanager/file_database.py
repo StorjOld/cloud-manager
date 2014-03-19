@@ -25,6 +25,7 @@ class FileDatabase(object):
         """Release all resources."""
         self.db.close()
 
+
     def fetch(self, file_hash):
         """Retrieve a file record associated to the given hash."""
         cursor = self.db.cursor()
@@ -37,22 +38,7 @@ class FileDatabase(object):
         return self.convert(row)
 
 
-    def key_by_token(self, token):
-        """Retrieve a file hash associated with the given request token."""
-        cursor = self.db.cursor()
-        result = cursor.execute(
-            """SELECT hash FROM files WHERE request_token = ?""",
-            [token])
-
-        row = result.fetchone()
-
-        if row is None:
-            return None
-
-        return row['hash']
-
-
-    def store(self, key, size, name, payload, token=None):
+    def store(self, key, size, name, payload):
         """Store information regarding an uploaded file.
 
         Arguments:
@@ -60,17 +46,16 @@ class FileDatabase(object):
         size       -- Size of the file, in bytes
         name       -- File name
         payload    -- Blockchain payload
-        token      -- Request token
 
         """
         cursor = self.db.cursor()
         cursor.execute(
             """
-                INSERT INTO files (name, hash, size, payload, request_token)
-                SELECT ?, ?, ?, ?, ?
+                INSERT INTO files (name, hash, size, payload)
+                SELECT ?, ?, ?, ?
                 WHERE NOT EXISTS (SELECT 1 FROM files WHERE hash = ?);
             """,
-            [name, key, size, payload, token, key])
+            [name, key, size, payload, key])
 
         self.db.commit()
 
@@ -99,7 +84,7 @@ class FileDatabase(object):
         files = [self.convert(r) for r in records]
 
         for f in files:
-            self.store(f.hash, f.size, f.name, f.payload, None)
+            self.store(f.hash, f.size, f.name, f.payload)
 
         cursor = self.db.cursor()
         cursor.execute(
@@ -173,6 +158,23 @@ class FileDatabase(object):
                         AND payload IS NOT NULL
                         ORDER BY size DESC) y;
             """, [size, size])
+
+        while True:
+            row = result.fetchone()
+            if row is None:
+                return
+
+            yield self.convert(row)
+
+        result.close()
+
+
+    def upload_candidates(self):
+        cursor = self.db.cursor()
+        result = cursor.execute(
+            """
+                SELECT * FROM files WHERE payload IS NULL;
+            """)
 
         while True:
             row = result.fetchone()
