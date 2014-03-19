@@ -237,12 +237,21 @@ class CloudManager(object):
 
 
     def sync_status(self):
+        """Return synchronization status information.
+
+        This method returns a dictionary with two lists,
+        one containing all the files that are waiting to
+        be uploaded to the cloud hosting websites, and
+        another one containing all the files that are
+        waiting to be uploaded to the blockchain.
+
+        """
         not_yet_blockchained = self.file_database.blockchain_candidates()
         not_yet_cloudshared  = self.file_database.upload_candidates()
 
         return {
-            "to_be_cloudshared": [self.dict_description(f) for f in not_yet_cloudshared],
-            "to_be_blockchained": [self.dict_description(f) for f in not_yet_blockchained]
+            "cloud_queue":      [self.dict_description(f) for f in not_yet_cloudshared],
+            "blockchain_queue": [self.dict_description(f) for f in not_yet_blockchained]
         }
 
     def dict_description(self, f):
