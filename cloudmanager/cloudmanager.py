@@ -55,23 +55,23 @@ class CloudManager(object):
         and then uploads it to three different cloud hosts.
 
         """
-        key     = self.add_to_storage(file_path, token)
+        key = helpers.sha256(file_path)
+        if self.exists(key):
+            return key
+
+        self.add_to_storage(key, file_path, token)
         uploads = self.plowshare.upload(file_path, self.RedundancyLevel)
 
         self.on_upload_finished(key, uploads)
         return key
 
-    def add_to_storage(self, file_path, token):
+    def add_to_storage(self, key, file_path, token):
         """Add a file to local storage.
 
         This method also registers the file in the database,
         without any payload information.
 
         """
-        key = helpers.sha256(file_path)
-        if self.exists(key):
-            return key
-
         needed = os.path.getsize(file_path)
 
         if not self.make_room_for(needed):
@@ -80,7 +80,7 @@ class CloudManager(object):
         saved_path = self.storage.add(file_path, key)
         self.file_database.store(key, needed, saved_path, None, token)
         self.meter.measure_upload(needed)
-        return key
+        return saved_path
 
     def on_upload_finished(self, key, uploads):
         record = self.file_database.fetch(key)
