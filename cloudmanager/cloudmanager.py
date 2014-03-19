@@ -47,7 +47,7 @@ class CloudManager(object):
     def __exit__(self, *args):
         self.close()
 
-    def upload(self, file_path):
+    def upload(self, file_path, token):
         """Add a file to the cloud.
 
         If the given file didn't exist yet, this method
@@ -55,13 +55,13 @@ class CloudManager(object):
         and then uploads it to three different cloud hosts.
 
         """
-        key     = self.add_to_storage(file_path)
+        key     = self.add_to_storage(file_path, token)
         uploads = self.plowshare.upload(file_path, self.RedundancyLevel)
 
         self.on_upload_finished(key, uploads)
         return key
 
-    def add_to_storage(self, file_path):
+    def add_to_storage(self, file_path, token):
         """Add a file to local storage.
 
         This method also registers the file in the database,
@@ -78,7 +78,7 @@ class CloudManager(object):
             return False
 
         saved_path = self.storage.add(file_path, key)
-        self.file_database.store(key, needed, saved_path, None)
+        self.file_database.store(key, needed, saved_path, None, token)
         self.meter.measure_upload(needed)
         return key
 
@@ -132,6 +132,10 @@ class CloudManager(object):
             return None
 
         return json.loads(record.payload)
+
+    def key_by_token(self, token):
+        """Return a file hash given a request token."""
+        return self.file_database.key_by_token(token)
 
     def used_space(self):
         """Return this node's storage usage."""

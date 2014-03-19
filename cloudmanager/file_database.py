@@ -29,14 +29,30 @@ class FileDatabase(object):
         """Retrieve a file record associated to the given hash."""
         cursor = self.db.cursor()
         result = cursor.execute(
-            "SELECT * FROM files WHERE hash = ?",
+            """SELECT * FROM files WHERE hash = ?""",
             [file_hash])
 
         row = result.fetchone()
 
         return self.convert(row)
 
-    def store(self, key, size, name, payload):
+
+    def key_by_token(self, token):
+        """Retrieve a file hash associated with the given request token."""
+        cursor = self.db.cursor()
+        result = cursor.execute(
+            """SELECT hash FROM files WHERE request_token = ?""",
+            [token])
+
+        row = result.fetchone()
+
+        if row is None:
+            return None
+
+        return row['hash']
+
+
+    def store(self, key, size, name, payload, token=None):
         """Store information regarding an uploaded file.
 
         Arguments:
@@ -44,16 +60,17 @@ class FileDatabase(object):
         size       -- Size of the file, in bytes
         name       -- File name
         payload    -- Blockchain payload
+        token      -- Request token
 
         """
         cursor = self.db.cursor()
         cursor.execute(
             """
-                INSERT INTO files (name, hash, size, payload)
-                SELECT ?, ?, ?, ?
+                INSERT INTO files (name, hash, size, payload, token)
+                SELECT ?, ?, ?, ?, ?
                 WHERE NOT EXISTS (SELECT 1 FROM files WHERE hash = ?);
             """,
-            [name, key, size, payload, key])
+            [name, key, size, payload, token, key])
 
         self.db.commit()
 
@@ -82,7 +99,7 @@ class FileDatabase(object):
         files = [self.convert(r) for r in records]
 
         for f in files:
-            self.store(f.hash, f.size, f.name, f.payload)
+            self.store(f.hash, f.size, f.name, f.payload, None)
 
         cursor = self.db.cursor()
         cursor.execute(
