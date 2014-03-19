@@ -83,7 +83,7 @@ class CloudManager(object):
         return key
 
     def on_upload_finished(self, key, uploads):
-        record = self.file_database.fetch(file_hash)
+        record = self.file_database.fetch(key)
 
         info = json.dumps(payload.to_dict(payload.build(
             record.name,
