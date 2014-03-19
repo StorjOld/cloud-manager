@@ -131,7 +131,7 @@ class CloudManager(object):
     def info(self, file_hash):
         """Return file information for a given hash."""
         record = self.file_database.fetch(file_hash)
-        if record is None:
+        if record is None or record.payload is None:
             return None
 
         return json.loads(record.payload)
