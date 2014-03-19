@@ -66,7 +66,7 @@ class FileDatabase(object):
         cursor = self.db.cursor()
         cursor.execute(
             """
-                INSERT INTO files (name, hash, size, payload, token)
+                INSERT INTO files (name, hash, size, payload, request_token)
                 SELECT ?, ?, ?, ?, ?
                 WHERE NOT EXISTS (SELECT 1 FROM files WHERE hash = ?);
             """,
