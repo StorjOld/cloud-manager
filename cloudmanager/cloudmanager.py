@@ -56,7 +56,7 @@ class CloudManager(object):
 
         """
         key     = self.add_to_storage(file_path)
-        uploads = self.plowshare.upload(file_path, self.RedundancyLevle)
+        uploads = self.plowshare.upload(file_path, self.RedundancyLevel)
 
         self.on_upload_finished(key, uploads)
         return key
