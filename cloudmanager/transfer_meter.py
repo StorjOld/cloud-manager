@@ -115,14 +115,14 @@ class TransferMeter(object):
         self.measure_download(byte_count)
 
     def total_incoming(self):
-        return self.total_downloaded()
+        return self.total_download()
 
     def total_outgoing(self):
-        return self.total_uploaded()
+        return self.total_upload()
 
     def current_incoming(self):
-        return self.current_downloaded()
+        return self.current_download()
 
     def current_outgoing(self):
-        return self.current_uploaded()
+        return self.current_upload()
 
