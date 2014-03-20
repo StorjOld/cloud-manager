@@ -1,4 +1,5 @@
 import sqlite3
+import datetime
 
 class TransferMeter(object):
     """Register transfer statistics.
@@ -23,40 +24,86 @@ class TransferMeter(object):
         self.db = sqlite3.connect(database_path)
         self.db.row_factory = sqlite3.Row
 
+    def current_month_timestamp(self):
+        """Return the current month identifier."""
+        dt = datetime.datetime.now()
+
+        return "{0}-{1}".format(dt.year, dt.month)
+
+
     def measure_download(self, byte_count):
         """Add a given amount to the total download count."""
+        month = self.current_month_timestamp()
+
         cursor = self.db.cursor()
         cursor.execute(
             """
-                UPDATE transfer_meter
-                SET downloaded = downloaded + ?;
+                INSERT OR REPLACE INTO transfer_meter (uploaded, downloaded, month)
+                VALUES (
+                  (SELECT uploaded FROM transfer_meter WHERE month = ?),
+                  ? + COALESCE((SELECT downloaded FROM transfer_meter WHERE month = ?), 0),
+                  ?);
             """,
-            [byte_count])
+            [month, byte_count, month, month])
 
         self.db.commit()
 
     def measure_upload(self, byte_count):
         """Add a given amount to the total upload count."""
+        month = self.current_month_timestamp()
+
         cursor = self.db.cursor()
         cursor.execute(
             """
-                UPDATE transfer_meter
-                SET uploaded = uploaded + ?;
+                INSERT OR REPLACE INTO transfer_meter (uploaded, downloaded, month)
+                VALUES (
+                  ? + COALESCE((SELECT uploaded FROM transfer_meter WHERE month = ?), 0),
+                  (SELECT downloaded FROM transfer_meter WHERE month = ?),
+                  ?);
             """,
-            [byte_count])
+            [byte_count, month, month, month])
 
         self.db.commit()
 
+
     def total_download(self):
         """Retrieve the total number of bytes downloaded."""
-        row = self.db.cursor().execute(
-            "SELECT downloaded FROM transfer_meter;")
+        result = self.db.cursor().execute(
+            "SELECT SUM(downloaded) AS total FROM transfer_meter;")
 
-        return row['downloaded']
+        return result.fetchone()['total']
 
     def total_upload(self):
         """Retrieve the total number of bytes uploaded."""
-        row = self.db.cursor().execute(
-            "SELECT uploaded FROM transfer_meter;")
+        result = self.db.cursor().execute(
+            "SELECT SUM(uploaded) AS total FROM transfer_meter;")
 
-        return row['uploaded']
+        return result.fetchone()['total']
+
+
+    def current_download(self):
+        """Retrieve the number of bytes downloaded for the current month."""
+        result = self.db.cursor().execute(
+            """
+                SELECT downloaded AS total FROM transfer_meter
+                WHERE month = ?;
+            """,
+            [self.current_month_timestamp()])
+
+        row = result.fetchone()
+
+        return row is None and 0 or row['total']
+
+
+    def current_upload(self):
+        """Retrieve the number of bytes uploaded for the current month."""
+        result = self.db.cursor().execute(
+            """
+                SELECT uploaded AS total FROM transfer_meter
+                WHERE month = ?;
+            """,
+            [self.current_month_timestamp()])
+
+        row = result.fetchone()
+
+        return row is None and 0 or row['total']

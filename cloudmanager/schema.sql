@@ -12,3 +12,5 @@ INSERT INTO transfer_meter VALUES(0, 0);
 
 ALTER TABLE files ADD COLUMN blockchain_hash    VARCHAR;
 ALTER TABLE files ADD COLUMN exported_timestamp INTEGER;
+
+ALTER TABLE transfer_meter ADD COLUMN month VARCHAR;
