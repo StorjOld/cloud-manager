@@ -92,7 +92,7 @@ class TransferMeter(object):
 
         row = result.fetchone()
 
-        return row is None and 0 or row['total']
+        return 0 if row is None else row['total']
 
 
     def current_upload(self):
@@ -106,4 +106,4 @@ class TransferMeter(object):
 
         row = result.fetchone()
 
-        return row is None and 0 or row['total']
+        return 0 if row is None else row['total']
