@@ -66,8 +66,8 @@ class CloudManager(object):
             return False
 
         saved_path = self.storage.add(file_path, key)
+        self.meter.measure_incoming(needed)
         self.file_database.store(key, needed, saved_path, None)
-        self.meter.measure_upload(needed)
         return key
 
 
@@ -92,6 +92,7 @@ class CloudManager(object):
                 uploads)))
 
             self.file_database.set_payload(record.hash, info)
+            self.meter.measure_outgoing(record.size * self.RedundancyLevel)
 
 
     def warm_up(self, file_hash):
@@ -107,6 +108,7 @@ class CloudManager(object):
             return None
 
         if self.storage.is_cached(record.name):
+            self.meter.measure_outgoing(record.size)
             return self.storage.path(record.name)
 
         if record.payload is None:
@@ -118,7 +120,9 @@ class CloudManager(object):
         info = payload.from_dict(json.loads(record.payload))
 
         self.plowshare.download(info.uploads, self.storage.storage_path, record.name)
-        self.meter.measure_upload(record.size)
+
+        self.meter.measure_incoming(record.size)
+        self.meter.measure_outgoing(record.size)
 
         return self.storage.path(record.name)
 
