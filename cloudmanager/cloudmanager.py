@@ -148,21 +148,21 @@ class CloudManager(object):
         """Return the percentage of used space."""
         return 1.0 * self.storage.used() / self.storage.size()
 
-    def total_downloaded(self):
-        """Return the total number of bytes downloaded"""
-        return self.meter.total_download()
+    def total_incoming(self):
+        """Return the total number of bytes downloaded."""
+        return self.meter.total_incoming()
 
-    def total_uploaded(self):
-        """Return the total number of bytes uploaded"""
-        return self.meter.total_upload()
+    def total_outgoing(self):
+        """Return the total number of bytes uploaded."""
+        return self.meter.total_outgoing()
 
-    def current_downloaded(self):
+    def current_incoming(self):
         """Return the number of bytes downloaded for the month."""
-        return self.meter.current_download()
+        return self.meter.current_incoming()
 
-    def current_uploaded(self):
+    def current_outgoing(self):
         """Return the number of bytes uploaded for the month."""
-        return self.meter.current_upload()
+        return self.meter.current_outgoing()
 
     def exists(self, file_hash):
         """Check if a given file is in this cloud system."""

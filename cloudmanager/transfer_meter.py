@@ -28,7 +28,7 @@ class TransferMeter(object):
         """Return the current month identifier."""
         dt = datetime.datetime.now()
 
-        return "{0}-{1}".format(dt.year, dt.month)
+        return "{0:04}-{1:02}".format(dt.year, dt.month)
 
 
     def measure_download(self, byte_count):
@@ -40,7 +40,7 @@ class TransferMeter(object):
             """
                 INSERT OR REPLACE INTO transfer_meter (uploaded, downloaded, month)
                 VALUES (
-                  (SELECT uploaded FROM transfer_meter WHERE month = ?),
+                  COALESCE((SELECT uploaded FROM transfer_meter WHERE month = ?), 0),
                   ? + COALESCE((SELECT downloaded FROM transfer_meter WHERE month = ?), 0),
                   ?);
             """,
@@ -58,7 +58,7 @@ class TransferMeter(object):
                 INSERT OR REPLACE INTO transfer_meter (uploaded, downloaded, month)
                 VALUES (
                   ? + COALESCE((SELECT uploaded FROM transfer_meter WHERE month = ?), 0),
-                  (SELECT downloaded FROM transfer_meter WHERE month = ?),
+                  COALESCE((SELECT downloaded FROM transfer_meter WHERE month = ?), 0),
                   ?);
             """,
             [byte_count, month, month, month])
@@ -107,3 +107,22 @@ class TransferMeter(object):
         row = result.fetchone()
 
         return 0 if row is None else row['total']
+
+    def measure_outgoing(self, byte_count):
+        self.measure_upload(byte_count)
+
+    def measure_incoming(self, byte_count):
+        self.measure_download(byte_count)
+
+    def total_incoming(self):
+        return self.total_downloaded()
+
+    def total_outgoing(self):
+        return self.total_uploaded()
+
+    def current_incoming(self):
+        return self.current_downloaded()
+
+    def current_outgoing(self):
+        return self.current_uploaded()
+
