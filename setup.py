@@ -14,5 +14,6 @@ setup(
     long_description=open('README.md').read(),
     install_requires=[
         'plowshare >= 0.2.0',
+        'psycopg2 >= 2.5'
     ],
 )
