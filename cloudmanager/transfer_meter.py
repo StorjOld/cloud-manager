@@ -67,43 +67,47 @@ class TransferMeter(object):
 
     def total_download(self):
         """Retrieve the total number of bytes downloaded."""
-        result = self.db.cursor().execute(
+        cursor = self.db.cursor()
+        cursor.execute(
             "SELECT SUM(downloaded) AS total FROM transfer_meter;")
 
-        return result.fetchone()['total']
+        return cursor.fetchone()['total']
 
     def total_upload(self):
         """Retrieve the total number of bytes uploaded."""
-        result = self.db.cursor().execute(
+        cursor = self.db.cursor()
+        cursor.execute(
             "SELECT SUM(uploaded) AS total FROM transfer_meter;")
 
-        return result.fetchone()['total']
+        return cursor.fetchone()['total']
 
 
     def current_download(self):
         """Retrieve the number of bytes downloaded for the current month."""
-        result = self.db.cursor().execute(
+        cursor = self.db.cursor()
+        cursor.execute(
             """
                 SELECT downloaded AS total FROM transfer_meter
                 WHERE month = ?;
             """,
             [self.current_month_timestamp()])
 
-        row = result.fetchone()
+        row = cursor.fetchone()
 
         return 0 if row is None else row['total']
 
 
     def current_upload(self):
         """Retrieve the number of bytes uploaded for the current month."""
-        result = self.db.cursor().execute(
+        cursor = self.db.cursor()
+        cursor.execute(
             """
                 SELECT uploaded AS total FROM transfer_meter
                 WHERE month = ?;
             """,
             [self.current_month_timestamp()])
 
-        row = result.fetchone()
+        row = cursor.fetchone()
 
         return 0 if row is None else row['total']
 

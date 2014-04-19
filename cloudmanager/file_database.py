@@ -28,11 +28,11 @@ class FileDatabase(object):
     def fetch(self, file_hash):
         """Retrieve a file record associated to the given hash."""
         cursor = self.db.cursor()
-        result = cursor.execute(
+        cursor.execute(
             """SELECT * FROM files WHERE hash = ?""",
             [file_hash])
 
-        row = result.fetchone()
+        row = cursor.fetchone()
 
         return self.convert(row)
 
@@ -114,7 +114,7 @@ class FileDatabase(object):
         """Iterate through unexported files."""
 
         cursor = self.db.cursor()
-        result = cursor.execute(
+        cursor.execute(
             """
                 SELECT * FROM files
                 WHERE blockchain_hash IS NULL
@@ -125,13 +125,13 @@ class FileDatabase(object):
             """)
 
         while True:
-            row = result.fetchone()
+            row = cursor.fetchone()
             if row is None:
                 return
 
             yield self.convert(row)
 
-        result.close()
+        cursor.close()
 
 
     def removal_candidates(self, size):
@@ -143,7 +143,7 @@ class FileDatabase(object):
 
         """
         cursor = self.db.cursor()
-        result = cursor.execute(
+        cursor.execute(
             """
                 SELECT * FROM
                     (SELECT * FROM files
@@ -159,30 +159,30 @@ class FileDatabase(object):
             """, [size, size])
 
         while True:
-            row = result.fetchone()
+            row = cursor.fetchone()
             if row is None:
                 return
 
             yield self.convert(row)
 
-        result.close()
+        cursor.close()
 
 
     def upload_candidates(self):
         cursor = self.db.cursor()
-        result = cursor.execute(
+        cursor.execute(
             """
                 SELECT * FROM files WHERE payload IS NULL;
             """)
 
         while True:
-            row = result.fetchone()
+            row = cursor.fetchone()
             if row is None:
                 return
 
             yield self.convert(row)
 
-        result.close()
+        cursor.close()
 
 
     def convert(self, row):
