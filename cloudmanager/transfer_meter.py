@@ -1,4 +1,4 @@
-import sqlite3
+import database
 import datetime
 
 class TransferMeter(object):
@@ -18,11 +18,10 @@ class TransferMeter(object):
         """Initialize a transfer meter.
 
         Arguments:
-        database_path -- Path to the sqlite3 database.
+        database_path -- database connection string.
 
         """
-        self.db = sqlite3.connect(database_path)
-        self.db.row_factory = sqlite3.Row
+        self.db = database.connect(database_path)
 
     def current_month_timestamp(self):
         """Return the current month identifier."""

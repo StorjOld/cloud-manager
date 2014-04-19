@@ -1,4 +1,4 @@
-import sqlite3
+import database
 
 class FileRecord(object):
     """FileRecord represents a file tracked by the database.
@@ -18,8 +18,7 @@ class FileDatabase(object):
     """
     def __init__(self, database_path):
         self.database_path = database_path
-        self.db = sqlite3.connect(database_path)
-        self.db.row_factory = sqlite3.Row
+        self.db = database.connect(database_path)
 
     def close(self):
         """Release all resources."""
