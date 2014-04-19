@@ -1,7 +1,7 @@
 import sqlite3
 
-def connect(**kwargs):
-    db = sqlite3.connect(**kwargs)
+def connect(*args, **kwargs):
+    db = sqlite3.connect(*args, **kwargs)
 
     db.row_factory = sqlite3.Row
 
