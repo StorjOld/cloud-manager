@@ -80,6 +80,9 @@ class FileDatabase(object):
         register the blockchain identifier.
 
         """
+        if len(records) == 0:
+            return True
+
         files = [self.convert(r) for r in records]
 
         for f in files:
@@ -99,6 +102,9 @@ class FileDatabase(object):
 
 
     def mark_exported(self, files):
+        if len(files) == 0:
+            return
+
         cursor = self.db.cursor()
         cursor.execute(
             """
