@@ -37,13 +37,15 @@ class TransferMeter(object):
         cursor = self.db.cursor()
         cursor.execute(
             """
-                INSERT OR REPLACE INTO transfer_meter (uploaded, downloaded, month)
-                VALUES (
-                  COALESCE((SELECT uploaded FROM transfer_meter WHERE month = ?), 0),
-                  ? + COALESCE((SELECT downloaded FROM transfer_meter WHERE month = ?), 0),
-                  ?);
-            """,
-            [month, byte_count, month, month])
+                INSERT INTO transfer_meter (uploaded, downloaded, month)
+                SELECT 0, 0, %s WHERE %s NOT IN ((SELECT month FROM transfer_meter));
+
+            """, [month, month])
+
+        cursor.execute(
+            """
+                UPDATE transfer_meter SET downloaded = downloaded + %s WHERE month = %s;
+            """, [byte_count, month])
 
         self.db.commit()
 
@@ -54,13 +56,15 @@ class TransferMeter(object):
         cursor = self.db.cursor()
         cursor.execute(
             """
-                INSERT OR REPLACE INTO transfer_meter (uploaded, downloaded, month)
-                VALUES (
-                  ? + COALESCE((SELECT uploaded FROM transfer_meter WHERE month = ?), 0),
-                  COALESCE((SELECT downloaded FROM transfer_meter WHERE month = ?), 0),
-                  ?);
-            """,
-            [byte_count, month, month, month])
+                INSERT INTO transfer_meter (uploaded, downloaded, month)
+                SELECT 0, 0, %s WHERE %s NOT IN ((SELECT month FROM transfer_meter));
+
+            """, [month, month])
+
+        cursor.execute(
+            """
+                UPDATE transfer_meter SET uploaded = uploaded + %s WHERE month = %s;
+            """, [byte_count, month])
 
         self.db.commit()
 
@@ -88,7 +92,7 @@ class TransferMeter(object):
         cursor.execute(
             """
                 SELECT downloaded AS total FROM transfer_meter
-                WHERE month = ?;
+                WHERE month = %s;
             """,
             [self.current_month_timestamp()])
 
@@ -103,7 +107,7 @@ class TransferMeter(object):
         cursor.execute(
             """
                 SELECT uploaded AS total FROM transfer_meter
-                WHERE month = ?;
+                WHERE month = %s;
             """,
             [self.current_month_timestamp()])
 

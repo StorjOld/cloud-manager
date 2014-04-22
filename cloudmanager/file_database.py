@@ -29,7 +29,7 @@ class FileDatabase(object):
         """Retrieve a file record associated to the given hash."""
         cursor = self.db.cursor()
         cursor.execute(
-            """SELECT * FROM files WHERE hash = ?""",
+            """SELECT * FROM files WHERE hash = %s""",
             [file_hash])
 
         row = cursor.fetchone()
@@ -51,8 +51,8 @@ class FileDatabase(object):
         cursor.execute(
             """
                 INSERT INTO files (name, hash, size, payload)
-                SELECT ?, ?, ?, ?
-                WHERE NOT EXISTS (SELECT 1 FROM files WHERE hash = ?);
+                SELECT %s, %s, %s, %s
+                WHERE NOT EXISTS (SELECT 1 FROM files WHERE hash = %s);
             """,
             [name, key, size, payload, key])
 
@@ -65,7 +65,7 @@ class FileDatabase(object):
         cursor = self.db.cursor()
         cursor.execute(
             """
-                UPDATE files SET payload = ? WHERE hash = ?
+                UPDATE files SET payload = %s WHERE hash = %s
             """,
             [payload, key])
 
@@ -91,7 +91,7 @@ class FileDatabase(object):
         cursor = self.db.cursor()
         cursor.execute(
             """
-                UPDATE files set blockchain_hash = ?
+                UPDATE files set blockchain_hash = %s
                 WHERE hash IN ({0})
             """.format(','.join(
                 ["'%s'" % f.hash for f in files])),
@@ -108,7 +108,7 @@ class FileDatabase(object):
         cursor = self.db.cursor()
         cursor.execute(
             """
-                UPDATE files SET exported_timestamp = datetime('now')
+                UPDATE files SET exported_timestamp = NOW()
                 WHERE hash IN ({0})
             """.format(','.join(
                 ["'%s'" % f.hash for f in files])))
@@ -126,7 +126,7 @@ class FileDatabase(object):
                 WHERE blockchain_hash IS NULL
                 AND payload IS NOT NULL
                 AND (exported_timestamp IS NULL OR
-                    exported_timestamp < DATE(datetime('now'), '-1 hour'))
+                    exported_timestamp < NOW() - INTERVAL '1 hour')
                 ORDER BY length(payload);
             """)
 
@@ -153,13 +153,13 @@ class FileDatabase(object):
             """
                 SELECT * FROM
                     (SELECT * FROM files
-                        WHERE size >= ?
+                        WHERE size >= %s
                         AND payload IS NOT NULL
                         ORDER BY size ASC) x
                 UNION
                 SELECT * FROM
                     (SELECT * FROM files
-                        WHERE size < ?
+                        WHERE size < %s
                         AND payload IS NOT NULL
                         ORDER BY size DESC) y;
             """, [size, size])
