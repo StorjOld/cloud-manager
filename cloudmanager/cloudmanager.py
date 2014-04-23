@@ -141,13 +141,24 @@ class CloudManager(object):
         return json.loads(record.payload)
 
 
-    def upload_queue_size(self):
+    def upload_queue_info(self):
         """Return the cloud hosting queue size."""
-        return sum(1 for _ in self.file_database.upload_candidates())
+        info = { "size": 0, "count": 0 }
+        for record in self.file_database.upload_candidates():
+            info["size"]  += record.size
+            info["count"] += 1
 
-    def blockchain_queue_size(self):
+        return info
+
+    def blockchain_queue_info(self):
         """Return the blockchain queue size."""
-        return sum(1 for _ in self.file_database.blockchain_candidates())
+        info = { "size": 0, "count": 0 }
+
+        for record in self.file_database.blockchain_candidates():
+            info["size"]  += record.size
+            info["count"] += 1
+
+        return info
 
     def used_space(self):
         """Return this node's storage usage."""
