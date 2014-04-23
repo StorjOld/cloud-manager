@@ -140,6 +140,15 @@ class CloudManager(object):
 
         return json.loads(record.payload)
 
+
+    def upload_queue_size(self):
+        """Return the cloud hosting queue size."""
+        return sum(1 for _ in self.file_database.upload_candidates())
+
+    def blockchain_queue_size(self):
+        """Return the blockchain queue size."""
+        return sum(1 for _ in self.file_database.blockchain_candidates())
+
     def used_space(self):
         """Return this node's storage usage."""
         return self.storage.used()
@@ -265,6 +274,7 @@ class CloudManager(object):
             "cloud_queue":      [self.dict_description(f) for f in not_yet_cloudshared],
             "blockchain_queue": [self.dict_description(f) for f in not_yet_blockchained]
         }
+
 
     def dict_description(self, f):
         base = {
