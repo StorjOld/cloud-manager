@@ -2,6 +2,7 @@ import os
 import plowshare
 import json
 
+import chain_state
 import file_database
 import storage
 import transfer_meter
@@ -18,10 +19,11 @@ class CloudManager(object):
     """
     RedundancyLevel = 3
 
-    Plowshare = plowshare.Plowshare
-    Database  = file_database.FileDatabase
-    Storage   = storage.Storage
-    Meter     = transfer_meter.TransferMeter
+    Plowshare  = plowshare.Plowshare
+    Database   = file_database.FileDatabase
+    Storage    = storage.Storage
+    Meter      = transfer_meter.TransferMeter
+    ChainState = chain_state.ChainState
 
     def __init__(self, database_path, storage_path, storage_size):
         """Initialize a CloudManager instance.
@@ -36,6 +38,7 @@ class CloudManager(object):
         self.plowshare     = self.Plowshare()
         self.storage       = self.Storage(storage_path, storage_size)
         self.meter         = self.Meter(database_path)
+        self.chain_state   = self.ChainState(database_path)
 
     def close(self):
         """Clean up all resources."""
@@ -159,6 +162,12 @@ class CloudManager(object):
             info["count"] += 1
 
         return info
+
+    def last_known_block(self):
+        return self.chain_state.last_known_block()
+
+    def visit_block(self, block_height):
+        self.chain_state.visit_block(block_height)
 
     def used_space(self):
         """Return this node's storage usage."""
