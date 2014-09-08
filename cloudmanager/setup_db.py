@@ -2,8 +2,9 @@ import sys
 import sqlite3
 from pkg_resources import resource_string
 
-if __name__ == "__main__":
-    connection = sqlite3.connect(sys.argv[1])
+def setup_db(db_name='test.db'):
+    #Import sql schema
+    connection = sqlite3.connect(db_name)
 
     cursor = connection.cursor()
     cursor.executescript(resource_string(__name__, 'schema.sql'))
@@ -11,3 +12,7 @@ if __name__ == "__main__":
     connection.commit()
     cursor.close()
     connection.close()
+
+
+if __name__ == "__main__":
+    setup_db(sys.argv[1])

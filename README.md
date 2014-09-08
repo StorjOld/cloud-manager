@@ -88,3 +88,8 @@ Here's an example:
     import cloudmanager
     help(cloudmanager.CloudManager)
 
+#### Testing
+
+    tox
+
+
