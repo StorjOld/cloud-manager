@@ -5,8 +5,8 @@ CREATE TABLE files (
   payload text);
 
 CREATE TABLE transfer_meter (
-  uploaded integer,
-  downloaded integer);
+  uploaded BIGINT,
+  downloaded BIGINT);
 
 INSERT INTO transfer_meter
   SELECT 0, 0
@@ -28,6 +28,3 @@ INSERT INTO blockchain_state
   SELECT 0
   WHERE NOT EXISTS (SELECT * FROM blockchain_state);
 
--- Migration 2014-04-25: Change transfer counters to bigint
-ALTER TABLE transfer_meter ALTER COLUMN uploaded   TYPE BIGINT;
-ALTER TABLE transfer_meter ALTER COLUMN downloaded TYPE BIGINT;
