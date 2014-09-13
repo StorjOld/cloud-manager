@@ -1,0 +1,14 @@
+language: python
+branches:
+  except:
+    - legacy
+    - experimental
+env:
+  - TOXENV=py27
+  - TOXENV=py34
+install:
+  - travis_retry pip install -e '.[test]'
+addons:
+  postgresql: '9.3'
+script:
+  - tox
