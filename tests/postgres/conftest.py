@@ -45,7 +45,7 @@ def pytest_unconfigure(config):
         DB_TEST_CONN.close()
 
     cur = DB_CONN.cursor()
-    #cur.execute('DROP DATABASE %s;' % DB_NAME)
+    cur.execute('DROP DATABASE %s;' % DB_NAME)
     cur.close()
     DB_CONN.close()
 
