@@ -32,9 +32,10 @@ setup(
     description='Manages a pool of files uploaded to "the cloud"',
     long_description=open('README.md').read(),
     install_requires=[
-        'https://github.com/Storj/plowshare-wrapper.git',
+        'plowshare',
         'psycopg2 >= 2.5'
     ],
+    dependency_links=['git+ssh://git@github.com/Storj/plowshare-wrapper.git'],
     tests_require=['tox'],
     cmdclass = {'test': Tox},
 )
