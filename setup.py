@@ -35,7 +35,7 @@ setup(
         'plowshare',
         'psycopg2 >= 2.5'
     ],
-    dependency_links=['git+ssh://git@github.com/Storj/plowshare-wrapper.git'],
+    dependency_links = ["https://github.com/Storj/plowshare-wrapper/tarball/master#egg=plowshare"],
     tests_require=['tox'],
     cmdclass = {'test': Tox},
 )
