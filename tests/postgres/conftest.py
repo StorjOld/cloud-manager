@@ -35,7 +35,7 @@ def pytest_configure(config):
 
     except Exception as e:
         import traceback
-        print traceback.format_exc()
+        print(traceback.format_exc())
         pytest_unconfigure(config)
         raise e
 
