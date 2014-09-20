@@ -2,12 +2,12 @@ import os
 import plowshare
 import json
 
-import chain_state
-import file_database
-import storage
-import transfer_meter
-import payload
-import helpers
+from . import chain_state
+from . import file_database
+from . import storage
+from . import transfer_meter
+from . import payload
+from . import helpers
 
 class CloudManager(object):
     """Manages files uploaded to cloud services.

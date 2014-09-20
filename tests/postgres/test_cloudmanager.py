@@ -2,6 +2,7 @@ import cloudmanager
 from settings import TEST_DB_PATH
 
 def test_cloudmanager():
+
     with cloudmanager.CloudManager(TEST_DB_PATH, "storage", 20 * (2**20)) as cm:
         assert cm.usage_ratio()
 

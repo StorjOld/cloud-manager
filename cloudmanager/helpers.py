@@ -15,7 +15,6 @@ def sha256(path):
     h = hashlib.sha256()
     with open(path) as f:
         for chunk in iter(lambda: f.read(8192), b''):
-            h.update(chunk)
-
+            if not chunk: break
+            h.update(chunk.encode('utf-8'))
     return h.hexdigest()
-

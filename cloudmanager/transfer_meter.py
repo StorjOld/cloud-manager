@@ -1,4 +1,4 @@
-import database
+from . import database
 import datetime
 
 class TransferMeter(object):

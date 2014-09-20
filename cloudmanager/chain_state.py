@@ -1,4 +1,4 @@
-import database
+from . import database
 
 class ChainState(object):
     """Register blockchain known state.

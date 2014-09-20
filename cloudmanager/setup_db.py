@@ -17,7 +17,10 @@ def setup_db(db_uri='test.db'):
         import sqlite3
         connection = sqlite3.connect(db_uri)
         cursor = connection.cursor()
-        cursor.executescript(resource_string(__name__, 'schema.sql'))
+        schema = resource_string(__name__, 'schema.sql')
+        if isinstance(schema, bytes):
+            schema = schema.decode("utf-8")
+        cursor.executescript(schema)
         connection.commit()
         cursor.close()
 

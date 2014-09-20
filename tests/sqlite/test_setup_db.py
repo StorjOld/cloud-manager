@@ -1,10 +1,7 @@
 import os
-from cloudmanager.setup_db import setup_db
+import cloudmanager
 
 def test_setup_db_sqllite3():
-    try:
-        assert setup_db('test.db')
-    except Exception as e:
-        raise e
-    finally:
-        os.remove('test.db')
+    setup_db = cloudmanager.setup_db.setup_db
+    assert setup_db('test.db')
+    os.remove('test.db')
