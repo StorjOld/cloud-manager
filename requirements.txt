@@ -1,0 +1,4 @@
+psycopg2
+six
+yoyo-migrations
+git+https://github.com/Storj/plowshare-wrapper
