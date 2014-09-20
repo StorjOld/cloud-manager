@@ -1,1 +1,1 @@
-from cloudmanager import *
+from .cloudmanager import CloudManager

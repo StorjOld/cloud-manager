@@ -1,5 +1,5 @@
 import os
-import helpers
+from . import helpers
 import shutil
 
 class Storage(object):

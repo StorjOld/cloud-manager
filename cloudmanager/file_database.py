@@ -1,4 +1,4 @@
-import database
+from . import database
 
 class FileRecord(object):
     """FileRecord represents a file tracked by the database.

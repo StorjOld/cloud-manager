@@ -88,3 +88,18 @@ Here's an example:
     import cloudmanager
     help(cloudmanager.CloudManager)
 
+
+
+#### Tests
+
+Install development dependencies with:
+
+    pip install -e '.[develop]'
+
+Run:
+
+    tox
+
+This will run the test suite on Python 2.7.
+
+

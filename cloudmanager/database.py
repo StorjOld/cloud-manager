@@ -1,7 +1,10 @@
 import sqlite3
 import psycopg2
 import psycopg2.extras
-import urlparse
+try:
+    import urlparse
+except:
+    import urllib.parse as urlparse
 
 def connect(uri):
     result = urlparse.urlparse(uri)
