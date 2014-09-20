@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Storj/cloud-manager.svg?branch=master)](https://travis-ci.org/Storj/cloud-manager)
+
 cloud-manager
 =============
 
