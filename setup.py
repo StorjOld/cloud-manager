@@ -32,7 +32,8 @@ setup(
     description='Manages a pool of files uploaded to "the cloud"',
     long_description=open('README.md').read(),
     install_requires=[
-        'psycopg2 >= 2.5'
+        'psycopg2 >= 2.5',
+        'six',
     ],
     dependency_links = ["https://github.com/Storj/plowshare-wrapper/tarball/master#egg=plowshare"],
     tests_require=['tox'],
