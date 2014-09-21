@@ -27,7 +27,11 @@ def pytest_configure(config):
         DB_CONN = psycopg2.connect(PG_URI)
         DB_CONN.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur = DB_CONN.cursor()
-        cur.execute('CREATE DATABASE %s;' % DB_NAME)
+        try:
+            cur.execute('CREATE DATABASE %s;' % DB_NAME)
+        except:
+            cur.execute('DROP DATABASE %s;' % DB_NAME)
+            cur.execute('CREATE DATABASE %s;' % DB_NAME)
         cur.close()
 
         setup_db(TEST_DB_PATH)
