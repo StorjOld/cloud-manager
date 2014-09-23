@@ -8,7 +8,6 @@ file1 = "files/README.md"
 file2 = "files/test.mp3"
 file3 = "files/test.md"
 
-
 def remove_storage_files(regex='storage/*'):
     r = glob.glob(regex)
     for i in r:
