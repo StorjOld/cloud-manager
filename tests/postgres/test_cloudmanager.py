@@ -4,7 +4,6 @@ import os
 import glob
 import time
 
-
 file1 = "files/README.md"
 file2 = "files/test.mp3"
 file3 = "files/test.md"
