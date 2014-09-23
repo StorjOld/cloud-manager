@@ -35,6 +35,7 @@ def pytest_configure(config):
         cur.close()
 
         setup_db(TEST_DB_PATH)
+
         DB_TEST_CONN = psycopg2.connect(TEST_DB_PATH)
 
     except Exception as e:
@@ -49,7 +50,7 @@ def pytest_unconfigure(config):
         DB_TEST_CONN.close()
 
     cur = DB_CONN.cursor()
-    cur.execute('DROP DATABASE %s;' % DB_NAME)
+    #cur.execute('DROP DATABASE %s;' % DB_NAME)
     cur.close()
     DB_CONN.close()
 

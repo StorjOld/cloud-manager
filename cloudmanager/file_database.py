@@ -33,7 +33,7 @@ class FileDatabase(object):
             [file_hash])
 
         row = cursor.fetchone()
-
+        cursor.close()
         return self.convert(row)
 
 
@@ -57,6 +57,7 @@ class FileDatabase(object):
             [name, key, size, payload, key])
 
         self.db.commit()
+        cursor.close()
 
 
     def set_payload(self, key, payload):
@@ -70,6 +71,7 @@ class FileDatabase(object):
             [payload, key])
 
         self.db.commit()
+        cursor.close()
 
 
     def import_files(self, records, blockchain_hash):
@@ -98,6 +100,7 @@ class FileDatabase(object):
             [blockchain_hash])
 
         self.db.commit()
+        cursor.close()
         return True
 
 
@@ -114,7 +117,7 @@ class FileDatabase(object):
                 ["'%s'" % f.hash for f in files])))
 
         self.db.commit()
-
+        cursor.close()
 
     def blockchain_candidates(self):
         """Iterate through unexported files."""
