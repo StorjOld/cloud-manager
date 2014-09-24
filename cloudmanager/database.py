@@ -17,19 +17,15 @@ def connect(uri):
                 user=username,
                 password=password,
                 host=hostname)
-
-    return None
+    else:
+        return connect_sqlite3(uri)
 
 def connect_sqlite3(*args, **kwargs):
     db = sqlite3.connect(*args, **kwargs)
-
     db.row_factory = sqlite3.Row
-
     return db
 
 def connect_psycopg2(*args, **kwargs):
     db = psycopg2.connect(*args, **kwargs)
-
     db.cursor_factory = psycopg2.extras.DictCursor
-
     return db

@@ -7,6 +7,7 @@ import time
 file1 = "files/README.md"
 file2 = "files/test.mp3"
 file3 = "files/test.md"
+big_file = "files/big_file.md"
 
 def remove_storage_files(regex='storage/*'):
     r = glob.glob(regex)
@@ -26,6 +27,7 @@ def test_cloudmanager():
 
         warm_up = cm.warm_up('0000')
         assert warm_up is None
+        assert cm.info('0000') is None
 
         result = cm.download("invalidhash")
         assert not result
@@ -33,6 +35,7 @@ def test_cloudmanager():
         #assert cm.usage_ratio()
         upload1 = cm.upload(file1)
         assert upload1
+        assert cm.blockchain_queue_info()
         #call upload again for coverage
         upload1 = cm.upload(file1)
         assert upload1
@@ -40,6 +43,8 @@ def test_cloudmanager():
         assert cm.exists(upload1)
         assert cm.on_cache(upload1)
 
+        assert cm.upload(big_file) is False
+        
         cm.cloud_sync()
 
         data = cm.data_dump(128000)
@@ -91,5 +96,16 @@ def test_cloudmanager():
         upload3 = cm.upload(file3)
         remove_storage_files()
         assert cm.warm_up(upload3) is False
+
+
+        #more test coverage
+        from cloudmanager.payload import from_dict
+        d = {'version': '0.1',
+             'filehash': 'filename 01234567890123456789',
+             'filesize': '123',
+             'datetime': '2000-01-01',
+             'uploads':  1
+            }
+        assert from_dict(d)
 
         cm.close()

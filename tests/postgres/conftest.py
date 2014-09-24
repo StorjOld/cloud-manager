@@ -70,7 +70,7 @@ def pytest_runtest_teardown(item, nextitem):
     We won't drop it, since the connection is still open.
     """
     cur = DB_TEST_CONN.cursor()
-    cur.execute('DROP SCHEMA public CASCADE; CREATE SCHEMA public;')
+    #cur.execute('DROP SCHEMA public CASCADE; CREATE SCHEMA public;')
     cur.close()
 
 @pytest.fixture
