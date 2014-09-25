@@ -1,7 +1,7 @@
 cloud-manager
 =============
 [![Build Status](https://travis-ci.org/Storj/cloud-manager.svg?branch=master)](https://travis-ci.org/Storj/cloud-manager)
-[![Coverage Status](https://coveralls.io/repos/Storj/cloud-manager/badge.png)](https://coveralls.io/r/Storj/cloud-manager)
+[![Coverage Status](https://coveralls.io/repos/Storj/cloud-manager/badge.png?branch=master)](https://coveralls.io/r/Storj/cloud-manager?branch=master)
 
 "Cloud manager" manages a pool of files uploaded to "the cloud".  It keeps a
 cache of uploaded files, while uploading them using `plowshare-wrapper`.
