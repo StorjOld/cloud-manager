@@ -1,5 +1,6 @@
 *.pyc
 .tox/
-.coverage
+.coverage*
 *.egg-info/
 test.db
+tests/storage/*.*

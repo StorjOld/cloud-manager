@@ -27,10 +27,15 @@ def pytest_configure(config):
         DB_CONN = psycopg2.connect(PG_URI)
         DB_CONN.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
         cur = DB_CONN.cursor()
-        cur.execute('CREATE DATABASE %s;' % DB_NAME)
+        try:
+            cur.execute('CREATE DATABASE %s;' % DB_NAME)
+        except:
+            cur.execute('DROP DATABASE %s;' % DB_NAME)
+            cur.execute('CREATE DATABASE %s;' % DB_NAME)
         cur.close()
 
         setup_db(TEST_DB_PATH)
+
         DB_TEST_CONN = psycopg2.connect(TEST_DB_PATH)
 
     except Exception as e:
@@ -45,7 +50,7 @@ def pytest_unconfigure(config):
         DB_TEST_CONN.close()
 
     cur = DB_CONN.cursor()
-    cur.execute('DROP DATABASE %s;' % DB_NAME)
+    #cur.execute('DROP DATABASE %s;' % DB_NAME)
     cur.close()
     DB_CONN.close()
 
@@ -65,7 +70,7 @@ def pytest_runtest_teardown(item, nextitem):
     We won't drop it, since the connection is still open.
     """
     cur = DB_TEST_CONN.cursor()
-    cur.execute('DROP SCHEMA public CASCADE; CREATE SCHEMA public;')
+    #cur.execute('DROP SCHEMA public CASCADE; CREATE SCHEMA public;')
     cur.close()
 
 @pytest.fixture
