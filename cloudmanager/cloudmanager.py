@@ -245,6 +245,8 @@ class CloudManager(object):
         used_space = self.storage.used()
         while not self.storage.fits(used_space + needed):
             to_be_removed = self.removal_candidate(needed)
+            if to_be_removed is None:
+                return False
 
             self.storage.remove(to_be_removed.name)
             used_space -= to_be_removed.size

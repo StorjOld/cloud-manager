@@ -136,11 +136,11 @@ class FileDatabase(object):
         while True:
             row = cursor.fetchone()
             if row is None:
+                cursor.close()
                 return
 
             yield self.convert(row)
 
-        cursor.close()
 
 
     def removal_candidates(self, size):
@@ -170,11 +170,11 @@ class FileDatabase(object):
         while True:
             row = cursor.fetchone()
             if row is None:
+                cursor.close()
                 return
 
             yield self.convert(row)
 
-        cursor.close()
 
 
     def upload_candidates(self):
@@ -187,11 +187,10 @@ class FileDatabase(object):
         while True:
             row = cursor.fetchone()
             if row is None:
+                cursor.close()
                 return
 
             yield self.convert(row)
-
-        cursor.close()
 
 
     def convert(self, row):
