@@ -109,3 +109,31 @@ def test_cloudmanager():
         assert from_dict(d)
 
         cm.close()
+
+
+
+def test_cloudmanager_no_disk_space():
+    with cloudmanager.CloudManager(TEST_DB_PATH, "storage", 2200) as cm:
+
+        needed = os.path.getsize(big_file)
+
+        old_used = cm.storage.used
+        def used_stub():
+            return 1
+        cm.storage.used = used_stub
+
+        old_fits = cm.storage.fits
+        def fits_stub(file_bytes):
+            if file_bytes <= needed:
+                return True
+            return False
+        cm.storage.fits = fits_stub
+
+        upload3 = cm.upload(big_file)
+        assert upload3 == False
+
+        cm.storage.fits = old_fits
+        cm.storage.used = old_used
+
+        cm.close()
+
