@@ -28,5 +28,3 @@ def setup_db(db_uri='test.db'):
 
     return True
 
-if __name__ == "__main__":
-    setup_db(sys.argv[1])
