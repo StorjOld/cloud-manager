@@ -21,9 +21,9 @@ Check [INSTALL.md](INSTALL.md) for installation instructions.
 
 `cloudmanager` requires a database to function properly. An SQL schema is available
 in [cloudmanager/schema.sql](cloudmanager/schema.sql). There is also a helper tool,
-`cloudmanager.setup_db`, to load this schema:
+`cm_setup_db`, to load this schema:
 
-    python -mcloudmanager.setup_db db/production.sqlite3
+    ./cm_setup_db db/production.sqlite3
 
 
 After creating the database, the module is ready to be used. One must provide

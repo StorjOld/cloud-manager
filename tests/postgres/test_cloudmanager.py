@@ -137,3 +137,51 @@ def test_cloudmanager_no_disk_space():
 
         cm.close()
 
+def test_empty_records():
+    with cloudmanager.CloudManager(TEST_DB_PATH, "storage", 31) as cm:
+        result = cm.file_database.import_files([], None)
+        assert result
+
+
+def test_blockchain_queue_info():
+    with cloudmanager.CloudManager(TEST_DB_PATH, "storage", 31) as cm:
+        TEST_RECORD_COUNT = 3
+        TEST_RECORD_SIZE_EACH = 1024
+        with cm.file_database.db.cursor() as cursor:
+            for i in range(TEST_RECORD_COUNT):
+                cursor.execute(
+                    '''
+                        INSERT INTO files (name, size, hash, payload, exported_timestamp)
+                        VALUES ('name {}', {}, NULL, '{{}}', NULL);
+                    '''.format(i, TEST_RECORD_SIZE_EACH))
+            cm.file_database.db.commit()
+
+        result = cm.export_candidates(0)
+        assert result == []
+
+        expected_info = { "size": TEST_RECORD_COUNT * TEST_RECORD_SIZE_EACH,
+                          "count": TEST_RECORD_COUNT }
+        assert cm.blockchain_queue_info() == expected_info
+
+def test_payload_invalid_version():
+    from cloudmanager.payload import from_dict, from_blockchain_payload
+
+    invalid_ver = '''[
+            {
+                "version": "0.0"
+            }
+        ]'''
+
+    import json
+    invalid_ver_dict = json.loads(invalid_ver)
+
+    assert from_dict(invalid_ver_dict[0]) == None
+    assert from_blockchain_payload(invalid_ver) == None
+
+def test_insuff_space_warm_up():
+    with cloudmanager.CloudManager(TEST_DB_PATH, "storage", 31) as cm:
+        upload1 = cm.upload(file1)
+        assert upload1
+
+        cm.storage = cloudmanager.storage.Storage('', 0)
+        cm.warm_up(upload1)
