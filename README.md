@@ -3,8 +3,8 @@ cloud-manager
 [![Build Status](https://travis-ci.org/Storj/cloud-manager.svg?branch=master)](https://travis-ci.org/Storj/cloud-manager)
 [![Coverage Status](https://coveralls.io/repos/Storj/cloud-manager/badge.png?branch=master)](https://coveralls.io/r/Storj/cloud-manager?branch=master)
 
-"Cloud manager" manages a pool of files uploaded to "the cloud".  It keeps a
-cache of uploaded files, while uploading them using `plowshare-wrapper`.
+"cloud-manager" manages a pool of files uploaded to "the cloud".  It keeps a
+cache of the files uploaded, while uploading them using `plowshare-wrapper`.
 
 It works by registering all uploaded files in a database, along with links of
 hosts to where it has been uploaded. If there's enough space available locally,
@@ -14,12 +14,12 @@ faster.
 
 #### Installation
 
-Check [INSTALL.md](INSTALL.md) for installation instructions.
+Go to [INSTALL.md](INSTALL.md) for instructions regarding installation.
 
 
 #### Module usage
 
-`cloudmanager` requires a database to function properly. An SQL schema is available
+`cloudmanager` requires a database to function properly. A SQL schema is available
 in [cloudmanager/schema.sql](cloudmanager/schema.sql). There is also a helper tool,
 `cm_setup_db`, to load this schema:
 
@@ -34,7 +34,7 @@ three parameters:
 - Storage capacity (in bytes)
 
 
-Here's an usage example:
+Here's a usage example:
 
     import cloudmanager
 
@@ -91,14 +91,13 @@ Here's an example:
     help(cloudmanager.CloudManager)
 
 
-
 #### Tests
 
-Install development dependencies with:
+Install development dependencies by running:
 
     pip install -e '.[develop]'
 
-Run:
+Then run:
 
     tox
 
