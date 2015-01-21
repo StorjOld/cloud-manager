@@ -1,5 +1,5 @@
 import os
-import plowshare
+import plowshare.plowshare as plowshare
 import json
 
 from . import chain_state
